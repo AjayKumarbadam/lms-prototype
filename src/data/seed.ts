@@ -12,9 +12,9 @@ import type {
 } from '../types'
 
 export const people: Person[] = [
-  { id: 'u-admin', name: 'Ananya Sharma', email: 'ananya.sharma@kumuda.edu', role: 'administrator', title: 'LMS Administrator' },
-  { id: 'u-fac-1', name: 'Dr. Rajesh Iyer', email: 'rajesh.iyer@kumuda.edu', role: 'faculty', title: 'Associate Professor', department: 'Computer Science' },
-  { id: 'u-fac-2', name: 'Prof. Meera Kapoor', email: 'meera.kapoor@kumuda.edu', role: 'faculty', title: 'Professor', department: 'Management' },
+  { id: 'u-admin', name: 'Ananya Sharma', email: 'ananya.sharma@kumuda.edu', role: 'administrator', studentId: 'ADM-001', title: 'Chief Academic Administrator', department: 'Academic Affairs & Systems' },
+  { id: 'u-fac-1', name: 'Dr. Rajesh Iyer', email: 'rajesh.iyer@kumuda.edu', role: 'faculty', studentId: 'FAC-2041', title: 'Associate Professor & Research Lead', department: 'Computer Science & Engineering' },
+  { id: 'u-fac-2', name: 'Prof. Meera Kapoor', email: 'meera.kapoor@kumuda.edu', role: 'faculty', studentId: 'FAC-1088', title: 'Professor', department: 'Management' },
   { id: 'u-ta-1', name: 'Arjun Menon', email: 'arjun.menon@kumuda.edu', role: 'ta', title: 'Teaching Assistant' },
   { id: 'u-stu-1', name: 'Aarav Sharma', email: 'aarav.sharma@student.kumuda.edu', role: 'student', studentId: 'CSE21B046', department: 'Computer Science & Engineering', title: 'B.Tech — Computer Science & Engineering', batch: '2021–2025', section: 'B', semester: 'Semester 6 2024–2026' },
   { id: 'u-stu-2', name: 'Rohan Desai', email: 'rohan.desai@student.kumuda.edu', role: 'student', studentId: 'KN2024002', department: 'Computer Science' },

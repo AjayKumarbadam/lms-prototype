@@ -9,9 +9,16 @@ import {
   Sparkles,
   Search,
   ArrowUpRight,
+  Plus,
+  Trash2,
+  Folder,
+  FileText,
+  CheckCircle2,
+  Clock,
 } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useLms } from '../../store/LmsStore'
+import { Modal } from '../../components/ui'
 
 type SubjectFilter = 'all' | 'cs201' | 'cs305'
 
@@ -271,6 +278,125 @@ const FACULTY_ASSESSMENTS = [
   },
 ]
 
+type ActionStatus = 'Planned' | 'In progress' | 'Done' | 'Overdue'
+
+type CohortAction = {
+  id: string
+  title: string
+  subtext: string
+  dueDate: string
+  status: ActionStatus
+}
+
+type CohortMaterial = {
+  id: string
+  title: string
+  type: 'FOLDER' | 'PDF' | 'LINK'
+}
+
+type CohortStudent = {
+  id: string
+  name: string
+  score: number
+  initials: string
+}
+
+type CohortItem = {
+  id: string
+  name: string
+  isCustom: boolean
+  studentsCount: number
+  actionsCount: number
+  materialsCount: number
+  description: string
+  actions: CohortAction[]
+  outcome?: string
+  materials: CohortMaterial[]
+  students: CohortStudent[]
+}
+
+const INITIAL_COHORTS: CohortItem[] = [
+  {
+    id: 'c-remedial-1',
+    name: 'Remedial Class — Sem 5',
+    isCustom: true,
+    studentsCount: 6,
+    actionsCount: 3,
+    materialsCount: 2,
+    description:
+      'Students scoring below 50% across recent CS/DSA assessments. Weekly catch-up plan with focused practice and reassessment.',
+    actions: [
+      {
+        id: 'act-1',
+        title: 'Run 2 remedial sessions on Recursion',
+        subtext: 'Cover base cases, tracing and 4 practice problems each · due 6 Oct',
+        dueDate: '6 Oct',
+        status: 'In progress',
+      },
+      {
+        id: 'act-2',
+        title: 'Reassess with mock test',
+        subtext: 'Mini-midterm format · pass threshold 50% · due 15 Oct',
+        dueDate: '15 Oct',
+        status: 'Planned',
+      },
+      {
+        id: 'act-3',
+        title: 'Diagnostic quiz on weak topics',
+        subtext: '15-minute covering Recursion, Graphs, Scheduling · due 29 Sep',
+        dueDate: '29 Sep',
+        status: 'Done',
+      },
+    ],
+    outcome:
+      'Diagnostic quiz: Identified Recursion + Graphs as common gaps across the cohort.',
+    materials: [
+      { id: 'mat-1', title: 'DSA — Recursion fundamentals', type: 'FOLDER' },
+      { id: 'mat-2', title: 'Big-O cheatsheet poster', type: 'PDF' },
+    ],
+    students: [
+      { id: 'st-1', name: 'Kiran Reddy', score: 41, initials: 'KR' },
+      { id: 'st-2', name: 'Meera Iyer', score: 44, initials: 'MI' },
+      { id: 'st-3', name: 'Rohan Das', score: 38, initials: 'RD' },
+      { id: 'st-4', name: 'Vihaan Patel', score: 47, initials: 'VP' },
+      { id: 'st-5', name: 'Ananya Bose', score: 42, initials: 'AB' },
+      { id: 'st-6', name: 'Sara Khan', score: 46, initials: 'SK' },
+    ],
+  },
+  {
+    id: 'c-remedial-2',
+    name: 'Remedial for Data Structures',
+    isCustom: true,
+    studentsCount: 7,
+    actionsCount: 1,
+    materialsCount: 1,
+    description:
+      'Students needing reinforcement on linked lists, memory pointers, and algorithmic complexity.',
+    actions: [
+      {
+        id: 'act-2-1',
+        title: 'Pointer arithmetic workshop',
+        subtext: 'Hands-on pointer debugging lab session · due 22 Oct',
+        dueDate: '22 Oct',
+        status: 'Planned',
+      },
+    ],
+    materials: [
+      { id: 'mat-2-1', title: 'Pointers & Dynamic Allocation Guide', type: 'PDF' },
+    ],
+    students: [
+      { id: 'st-2-1', name: 'Dev Patel', score: 48, initials: 'DP' },
+      { id: 'st-2-2', name: 'Aisha Khan', score: 45, initials: 'AK' },
+    ],
+  },
+]
+
+const DEFAULT_AUTO_COHORTS = [
+  { id: 'c-auto-1', name: 'CS201 — Data Structures', studentsCount: 80 },
+  { id: 'c-auto-2', name: 'CS305 — Operating Systems', studentsCount: 45 },
+  { id: 'c-auto-3', name: 'Section CSE-A', studentsCount: 45 },
+]
+
 export function FacultyDashboard() {
   const { state } = useLms()
   const [activeTab, setActiveTab] = useState<'dashboard' | 'students' | 'assessments' | 'cohorts' | 'library'>('dashboard')
@@ -280,6 +406,121 @@ export function FacultyDashboard() {
   const [searchQuery, setSearchQuery] = useState('')
   const [rosterSearch, setRosterSearch] = useState('')
   const [rosterSectionFilter, setRosterSectionFilter] = useState<'all' | 'CSE-A' | 'CSE-C'>('all')
+
+  // Cohorts Action Plan State
+  const [cohortsList, setCohortsList] = useState<CohortItem[]>(INITIAL_COHORTS)
+  const [selectedCohortId, setSelectedCohortId] = useState<string>('c-remedial-1')
+  const [newCohortModal, setNewCohortModal] = useState(false)
+  const [newCohortName, setNewCohortName] = useState('')
+  const [newCohortDesc, setNewCohortDesc] = useState('')
+  const [newActionModal, setNewActionModal] = useState(false)
+  const [newActionTitle, setNewActionTitle] = useState('')
+  const [newActionSubtext, setNewActionSubtext] = useState('')
+  const [newActionDue, setNewActionDue] = useState('')
+  const [newMaterialModal, setNewMaterialModal] = useState(false)
+  const [newMaterialTitle, setNewMaterialTitle] = useState('')
+  const [newMaterialType, setNewMaterialType] = useState<'FOLDER' | 'PDF' | 'LINK'>('PDF')
+
+  const selectedCohort = cohortsList.find((c) => c.id === selectedCohortId) || cohortsList[0]
+
+  const plannedCount = selectedCohort ? selectedCohort.actions.filter((a) => a.status === 'Planned').length : 0
+  const inProgressCount = selectedCohort ? selectedCohort.actions.filter((a) => a.status === 'In progress').length : 0
+  const doneCount = selectedCohort ? selectedCohort.actions.filter((a) => a.status === 'Done').length : 0
+  const overdueCount = selectedCohort ? selectedCohort.actions.filter((a) => a.status === 'Overdue').length : 0
+  const totalActions = selectedCohort ? selectedCohort.actions.length : 0
+  const completionPct = totalActions > 0 ? Math.round((doneCount / totalActions) * 100) : 0
+
+  const handleUpdateActionStatus = (cohortId: string, actionId: string, newStatus: ActionStatus) => {
+    setCohortsList((prev) =>
+      prev.map((c) => {
+        if (c.id !== cohortId) return c
+        return {
+          ...c,
+          actions: c.actions.map((a) => (a.id === actionId ? { ...a, status: newStatus } : a)),
+        }
+      })
+    )
+  }
+
+  const handleDeleteCohort = (cohortId: string) => {
+    if (cohortsList.length <= 1) {
+      alert('At least one cohort must remain.')
+      return
+    }
+    const nextList = cohortsList.filter((c) => c.id !== cohortId)
+    setCohortsList(nextList)
+    setSelectedCohortId(nextList[0].id)
+  }
+
+  const handleAddCohort = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newCohortName.trim()) return
+    const newC: CohortItem = {
+      id: `c-custom-${Date.now()}`,
+      name: newCohortName.trim(),
+      isCustom: true,
+      studentsCount: 0,
+      actionsCount: 0,
+      materialsCount: 0,
+      description: newCohortDesc.trim() || 'Custom academic cohort created by faculty.',
+      actions: [],
+      materials: [],
+      students: [],
+    }
+    setCohortsList([newC, ...cohortsList])
+    setSelectedCohortId(newC.id)
+    setNewCohortName('')
+    setNewCohortDesc('')
+    setNewCohortModal(false)
+  }
+
+  const handleAddAction = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newActionTitle.trim() || !selectedCohort) return
+    const act: CohortAction = {
+      id: `act-${Date.now()}`,
+      title: newActionTitle.trim(),
+      subtext: `${newActionSubtext.trim() || 'Targeted intervention task'} · due ${newActionDue.trim() || 'Next week'}`,
+      dueDate: newActionDue.trim() || 'Next week',
+      status: 'Planned',
+    }
+    setCohortsList((prev) =>
+      prev.map((c) => {
+        if (c.id !== selectedCohort.id) return c
+        return {
+          ...c,
+          actions: [act, ...c.actions],
+          actionsCount: c.actions.length + 1,
+        }
+      })
+    )
+    setNewActionTitle('')
+    setNewActionSubtext('')
+    setNewActionDue('')
+    setNewActionModal(false)
+  }
+
+  const handleAddMaterial = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newMaterialTitle.trim() || !selectedCohort) return
+    const mat: CohortMaterial = {
+      id: `mat-${Date.now()}`,
+      title: newMaterialTitle.trim(),
+      type: newMaterialType,
+    }
+    setCohortsList((prev) =>
+      prev.map((c) => {
+        if (c.id !== selectedCohort.id) return c
+        return {
+          ...c,
+          materials: [...c.materials, mat],
+          materialsCount: c.materials.length + 1,
+        }
+      })
+    )
+    setNewMaterialTitle('')
+    setNewMaterialModal(false)
+  }
 
   const me = state.people.find((p) => p.id === state.currentUserId) || {
     name: 'Dr. Rajesh Iyer',
@@ -1181,51 +1422,359 @@ export function FacultyDashboard() {
         </motion.div>
       )}
 
-      {/* TAB 4: COHORTS */}
+      {/* TAB 4: COHORTS ACTION PLAN (3-COLUMN LAYOUT) */}
       {activeTab === 'cohorts' && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          className="space-y-6"
         >
-          {SECTIONS_DATA.map((sec) => (
-            <div
-              key={sec.id}
-              className="rounded-2xl border border-border bg-white p-5 shadow-2xs flex flex-col justify-between"
-            >
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="rounded-full bg-brand-soft px-2.5 py-0.5 text-xs font-bold text-brand border border-border">
-                    {sec.subjectCode}
-                  </span>
-                  <span className="text-xs font-bold text-text-heading">Section {sec.section}</span>
-                </div>
-                <h4 className="mt-3 text-base font-bold text-text-heading">{sec.subjectName}</h4>
-                <p className="text-xs text-muted-foreground mt-0.5">Faculty In-Charge: {me.name}</p>
+          {/* Cohorts Header Banner */}
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div className="flex items-center gap-3">
+              <h2 className="text-2xl font-black text-text-heading tracking-tight">Cohorts</h2>
+              <button
+                type="button"
+                onClick={() => setNewCohortModal(true)}
+                className="inline-flex items-center gap-1.5 rounded-full bg-brand px-4 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-brand-dark transition"
+              >
+                <Plus size={14} /> New cohort
+              </button>
+            </div>
 
-                <div className="mt-4 grid grid-cols-2 gap-2 text-center text-xs">
-                  <div className="rounded-xl bg-secondary/60 p-2.5 border border-border">
-                    <span className="block text-[10px] font-bold text-muted-foreground uppercase">Class Avg</span>
-                    <span className="text-base font-black text-emerald-600">{sec.avg}%</span>
+            {selectedCohort && (
+              <div className="flex-1 max-w-3xl lg:ml-8">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 className="text-xl font-bold text-text-heading tracking-tight">
+                      {selectedCohort.name}
+                    </h3>
+                    <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+                      {selectedCohort.description}
+                    </p>
                   </div>
-                  <div className="rounded-xl bg-secondary/60 p-2.5 border border-border">
-                    <span className="block text-[10px] font-bold text-muted-foreground uppercase">At-Risk</span>
-                    <span className="text-base font-black text-rose-600">{sec.atRisk}</span>
-                  </div>
+                  {selectedCohort.isCustom && (
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteCohort(selectedCohort.id)}
+                      className="shrink-0 inline-flex items-center gap-1.5 rounded-full border border-rose-300 bg-rose-50/70 px-3.5 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-100 transition shadow-2xs"
+                    >
+                      <Trash2 size={12} /> Delete cohort
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 3-Column Interactive Grid */}
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-12 items-start">
+            {/* COLUMN 1: Cohorts List (3 cols) */}
+            <div className="lg:col-span-3 space-y-4">
+              <div>
+                <p className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground mb-2.5">
+                  YOUR COHORTS
+                </p>
+                <div className="space-y-2">
+                  {cohortsList.map((cohort) => {
+                    const isSelected = cohort.id === selectedCohort.id
+                    return (
+                      <button
+                        key={cohort.id}
+                        type="button"
+                        onClick={() => setSelectedCohortId(cohort.id)}
+                        className={`w-full rounded-2xl border p-3.5 text-left transition ${
+                          isSelected
+                            ? 'border-brand bg-white shadow-sm ring-1 ring-brand/30'
+                            : 'border-border bg-white hover:border-brand/40 hover:bg-secondary/30 shadow-2xs'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <h4 className="text-xs font-bold text-text-heading truncate">
+                            {cohort.name}
+                          </h4>
+                          {cohort.isCustom && (
+                            <span className="shrink-0 rounded-full bg-indigo-50 border border-indigo-200 px-2 py-0.5 text-[9px] font-bold text-indigo-700 tracking-wider uppercase">
+                              CUSTOM
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-1.5 text-[11px] text-muted-foreground">
+                          {cohort.students.length} students · {cohort.actions.length} actions · {cohort.materials.length} materials
+                        </p>
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
 
-              <div className="mt-5 border-t border-border pt-3 flex items-center justify-between">
-                <span className="text-xs font-semibold text-muted-foreground">Completion: {sec.completion}%</span>
-                <Link
-                  to="/lms/gradebook"
-                  className="text-xs font-bold text-brand hover:underline"
-                >
-                  Gradebook →
-                </Link>
+              <div>
+                <p className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground mb-2.5">
+                  DEFAULT · AUTO-GENERATED
+                </p>
+                <div className="space-y-2">
+                  {DEFAULT_AUTO_COHORTS.map((ac) => (
+                    <div
+                      key={ac.id}
+                      className="flex items-center justify-between rounded-xl border border-border bg-white px-3 py-2.5 text-left shadow-2xs"
+                    >
+                      <span className="text-xs font-medium text-text-heading truncate pr-2">
+                        {ac.name}
+                      </span>
+                      <span className="shrink-0 rounded-full bg-secondary px-2.5 py-0.5 text-[11px] font-bold text-muted-foreground border border-border">
+                        {ac.studentsCount}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          ))}
+
+            {/* COLUMN 2: Action Plan (6 cols) */}
+            <div className="lg:col-span-6 space-y-4">
+              <div className="rounded-2xl border border-border bg-white p-5 shadow-2xs">
+                {/* Header */}
+                <div className="flex items-center justify-between pb-3.5 border-b border-border">
+                  <h3 className="text-sm font-bold text-text-heading">Action plan</h3>
+                  <button
+                    type="button"
+                    onClick={() => setNewActionModal(true)}
+                    className="inline-flex items-center gap-1 rounded-full bg-brand px-3.5 py-1 text-xs font-bold text-white shadow-xs hover:bg-brand-dark transition"
+                  >
+                    <Plus size={12} /> Add action
+                  </button>
+                </div>
+
+                {/* 4 Summary Counters */}
+                <div className="mt-4 grid grid-cols-4 gap-2">
+                  <div className="rounded-xl border border-border bg-secondary/40 p-2.5 text-center">
+                    <span className="block text-xl font-black text-foreground">{plannedCount}</span>
+                    <span className="block text-[10px] font-semibold text-muted-foreground mt-0.5">Planned</span>
+                  </div>
+                  <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-2.5 text-center">
+                    <span className="block text-xl font-black text-amber-700">{inProgressCount}</span>
+                    <span className="block text-[10px] font-semibold text-amber-700 mt-0.5">In progress</span>
+                  </div>
+                  <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-2.5 text-center">
+                    <span className="block text-xl font-black text-emerald-700">{doneCount}</span>
+                    <span className="block text-[10px] font-semibold text-emerald-700 mt-0.5">Done</span>
+                  </div>
+                  <div className="rounded-xl border border-rose-200 bg-rose-50/50 p-2.5 text-center">
+                    <span className="block text-xl font-black text-rose-700">{overdueCount}</span>
+                    <span className="block text-[10px] font-semibold text-rose-700 mt-0.5">Overdue</span>
+                  </div>
+                </div>
+
+                {/* Completion Progress Bar */}
+                <div className="mt-4 flex items-center gap-3">
+                  <span className="text-[11px] font-bold text-muted-foreground shrink-0">Completion</span>
+                  <div className="h-2 flex-1 rounded-full bg-secondary overflow-hidden border border-border">
+                    <div
+                      className="h-full rounded-full bg-emerald-500 transition-all duration-300"
+                      style={{ width: `${completionPct}%` }}
+                    />
+                  </div>
+                  <span className="text-[11px] font-bold text-text-heading shrink-0">
+                    {doneCount}/{totalActions} · {completionPct}%
+                  </span>
+                </div>
+
+                {/* Actions Interactive List */}
+                <div className="mt-5 space-y-2.5">
+                  {selectedCohort.actions.map((act) => (
+                    <div
+                      key={act.id}
+                      className="rounded-xl border border-border bg-secondary/20 p-3.5 hover:bg-secondary/40 transition flex items-start justify-between gap-3"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          {act.status === 'Done' ? (
+                            <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
+                          ) : act.status === 'In progress' ? (
+                            <Clock size={14} className="text-amber-600 shrink-0" />
+                          ) : (
+                            <div className="h-3.5 w-3.5 rounded-full border border-muted-foreground/40 shrink-0" />
+                          )}
+                          <h4 className="text-xs font-bold text-text-heading">{act.title}</h4>
+                        </div>
+                        <p className="mt-1 pl-5.5 text-[11px] text-muted-foreground leading-snug">
+                          {act.subtext}
+                        </p>
+                      </div>
+
+                      {/* Status Dropdown Pill with Chevron */}
+                      <div className="relative shrink-0">
+                        <select
+                          value={act.status}
+                          onChange={(e) =>
+                            handleUpdateActionStatus(
+                              selectedCohort.id,
+                              act.id,
+                              e.target.value as ActionStatus
+                            )
+                          }
+                          className={`rounded-full border px-2.5 py-1 text-[11px] font-bold transition focus:outline-none cursor-pointer appearance-none pr-6 ${
+                            act.status === 'In progress'
+                              ? 'border-amber-300 bg-amber-50 text-amber-800'
+                              : act.status === 'Done'
+                              ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
+                              : act.status === 'Overdue'
+                              ? 'border-rose-300 bg-rose-50 text-rose-800'
+                              : 'border-border bg-white text-muted-foreground'
+                          }`}
+                        >
+                          <option value="Planned">Planned</option>
+                          <option value="In progress">In progress</option>
+                          <option value="Done">Done</option>
+                          <option value="Overdue">Overdue</option>
+                        </select>
+                        <ChevronDown
+                          size={12}
+                          className="pointer-events-none absolute right-2 top-2 text-current opacity-70"
+                        />
+                      </div>
+                    </div>
+                  ))}
+
+                  {selectedCohort.actions.length === 0 && (
+                    <div className="text-center py-6 border border-dashed border-border rounded-xl">
+                      <p className="text-xs text-muted-foreground">
+                        No actions planned yet. Click "+ Add action" above to assign intervention tasks.
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Outcome callout */}
+                {selectedCohort.outcome && (
+                  <div className="mt-5 rounded-xl border border-brand/20 bg-brand-soft/60 p-3 text-xs leading-relaxed">
+                    <span className="font-bold text-brand">Outcome · Diagnostic quiz:</span>{' '}
+                    <span className="text-text-heading">
+                      {selectedCohort.outcome.replace(/^Diagnostic quiz:\s*/, '')}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* COLUMN 3: Materials & Students (3 cols) */}
+            <div className="lg:col-span-3 space-y-4">
+              {/* Assigned materials card */}
+              <div className="rounded-2xl border border-border bg-white p-4 shadow-2xs">
+                <div className="flex items-center justify-between pb-3 border-b border-border">
+                  <h3 className="text-xs font-bold text-text-heading">Assigned materials</h3>
+                  <button
+                    type="button"
+                    onClick={() => setNewMaterialModal(true)}
+                    className="rounded-full bg-brand px-3 py-0.5 text-[11px] font-bold text-white hover:bg-brand-dark transition shadow-2xs"
+                  >
+                    + Assign
+                  </button>
+                </div>
+
+                <div className="mt-3 space-y-2">
+                  {selectedCohort.materials.map((mat) => (
+                    <div
+                      key={mat.id}
+                      className="flex items-center justify-between rounded-xl border border-border bg-secondary/30 p-2.5"
+                    >
+                      <div className="flex items-center gap-2 min-w-0 pr-2">
+                        {mat.type === 'FOLDER' ? (
+                          <Folder size={14} className="text-brand shrink-0" />
+                        ) : (
+                          <FileText size={14} className="text-brand shrink-0" />
+                        )}
+                        <span className="text-xs font-medium text-text-heading truncate">
+                          {mat.title}
+                        </span>
+                      </div>
+                      <span className="shrink-0 rounded-md bg-purple-50 border border-purple-200 px-1.5 py-0.5 text-[9px] font-bold text-purple-700 uppercase">
+                        {mat.type}
+                      </span>
+                    </div>
+                  ))}
+
+                  {selectedCohort.materials.length === 0 && (
+                    <p className="text-center py-4 text-xs text-muted-foreground">
+                      No materials assigned
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Students card */}
+              <div className="rounded-2xl border border-border bg-white p-4 shadow-2xs">
+                <div className="flex items-center justify-between pb-3 border-b border-border">
+                  <h3 className="text-xs font-bold text-text-heading">
+                    Students ({selectedCohort.students.length})
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const sampleName = prompt('Enter student name to add to cohort:')
+                      if (sampleName && sampleName.trim()) {
+                        const inits = sampleName
+                          .trim()
+                          .split(' ')
+                          .map((n) => n[0])
+                          .join('')
+                          .slice(0, 2)
+                          .toUpperCase()
+                        setCohortsList((prev) =>
+                          prev.map((c) =>
+                            c.id === selectedCohort.id
+                              ? {
+                                  ...c,
+                                  students: [
+                                    ...c.students,
+                                    {
+                                      id: `st-${Date.now()}`,
+                                      name: sampleName.trim(),
+                                      score: Math.floor(Math.random() * 20) + 35,
+                                      initials: inits || 'ST',
+                                    },
+                                  ],
+                                }
+                              : c
+                          )
+                        )
+                      }
+                    }}
+                    className="rounded-full border border-border bg-white px-2.5 py-0.5 text-[11px] font-semibold text-muted-foreground hover:bg-secondary hover:text-text-heading transition shadow-2xs"
+                  >
+                    Add students
+                  </button>
+                </div>
+
+                <div className="mt-3 space-y-2">
+                  {selectedCohort.students.map((st) => (
+                    <div
+                      key={st.id}
+                      className="flex items-center justify-between rounded-xl border border-border/80 bg-white p-2"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-purple-100 text-[10px] font-bold text-purple-700">
+                          {st.initials}
+                        </div>
+                        <span className="text-xs font-medium text-text-heading truncate">
+                          {st.name}
+                        </span>
+                      </div>
+                      <span className="shrink-0 rounded-full bg-rose-50 border border-rose-200 px-2 py-0.5 text-[11px] font-bold text-rose-600">
+                        {st.score}%
+                      </span>
+                    </div>
+                  ))}
+
+                  {selectedCohort.students.length === 0 && (
+                    <p className="text-center py-4 text-xs text-muted-foreground">
+                      No students added
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
         </motion.div>
       )}
 
@@ -1274,6 +1823,144 @@ export function FacultyDashboard() {
           </div>
         </motion.div>
       )}
+
+      {/* Modal: New Cohort */}
+      <Modal open={newCohortModal} title="Create New Academic Cohort" onClose={() => setNewCohortModal(false)}>
+        <form onSubmit={handleAddCohort} className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-text-heading mb-1">Cohort Name</label>
+            <input
+              type="text"
+              required
+              value={newCohortName}
+              onChange={(e) => setNewCohortName(e.target.value)}
+              placeholder="e.g. Remedial Class — Sem 5"
+              className="w-full rounded-xl border border-border bg-white px-3 py-2 text-xs font-medium text-foreground focus:border-brand focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-text-heading mb-1">Description / Target Criteria</label>
+            <textarea
+              rows={3}
+              value={newCohortDesc}
+              onChange={(e) => setNewCohortDesc(e.target.value)}
+              placeholder="e.g. Students scoring below 50% across recent assessments..."
+              className="w-full rounded-xl border border-border bg-white px-3 py-2 text-xs font-medium text-foreground focus:border-brand focus:outline-none"
+            />
+          </div>
+          <div className="flex justify-end gap-2 pt-2 border-t border-border">
+            <button
+              type="button"
+              onClick={() => setNewCohortModal(false)}
+              className="rounded-xl border border-border px-3.5 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-secondary"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="rounded-xl bg-brand px-4 py-1.5 text-xs font-bold text-white hover:bg-brand-dark shadow-xs"
+            >
+              Create Cohort
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Modal: Add Action */}
+      <Modal open={newActionModal} title="Add Intervention Action" onClose={() => setNewActionModal(false)}>
+        <form onSubmit={handleAddAction} className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-text-heading mb-1">Action Title</label>
+            <input
+              type="text"
+              required
+              value={newActionTitle}
+              onChange={(e) => setNewActionTitle(e.target.value)}
+              placeholder="e.g. Run 2 remedial sessions on Recursion"
+              className="w-full rounded-xl border border-border bg-white px-3 py-2 text-xs font-medium text-foreground focus:border-brand focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-text-heading mb-1">Action Subtext / Specifics</label>
+            <input
+              type="text"
+              value={newActionSubtext}
+              onChange={(e) => setNewActionSubtext(e.target.value)}
+              placeholder="e.g. Cover base cases, tracing and 4 practice problems"
+              className="w-full rounded-xl border border-border bg-white px-3 py-2 text-xs font-medium text-foreground focus:border-brand focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-text-heading mb-1">Due Date</label>
+            <input
+              type="text"
+              value={newActionDue}
+              onChange={(e) => setNewActionDue(e.target.value)}
+              placeholder="e.g. 15 Oct"
+              className="w-full rounded-xl border border-border bg-white px-3 py-2 text-xs font-medium text-foreground focus:border-brand focus:outline-none"
+            />
+          </div>
+          <div className="flex justify-end gap-2 pt-2 border-t border-border">
+            <button
+              type="button"
+              onClick={() => setNewActionModal(false)}
+              className="rounded-xl border border-border px-3.5 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-secondary"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="rounded-xl bg-brand px-4 py-1.5 text-xs font-bold text-white hover:bg-brand-dark shadow-xs"
+            >
+              Add Action
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Modal: Assign Material */}
+      <Modal open={newMaterialModal} title="Assign Material to Cohort" onClose={() => setNewMaterialModal(false)}>
+        <form onSubmit={handleAddMaterial} className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-text-heading mb-1">Material Title</label>
+            <input
+              type="text"
+              required
+              value={newMaterialTitle}
+              onChange={(e) => setNewMaterialTitle(e.target.value)}
+              placeholder="e.g. DSA — Recursion fundamentals"
+              className="w-full rounded-xl border border-border bg-white px-3 py-2 text-xs font-medium text-foreground focus:border-brand focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-text-heading mb-1">Material Type</label>
+            <select
+              value={newMaterialType}
+              onChange={(e) => setNewMaterialType(e.target.value as 'FOLDER' | 'PDF' | 'LINK')}
+              className="w-full rounded-xl border border-border bg-white px-3 py-2 text-xs font-medium text-foreground focus:border-brand focus:outline-none cursor-pointer"
+            >
+              <option value="FOLDER">FOLDER</option>
+              <option value="PDF">PDF</option>
+              <option value="LINK">LINK</option>
+            </select>
+          </div>
+          <div className="flex justify-end gap-2 pt-2 border-t border-border">
+            <button
+              type="button"
+              onClick={() => setNewMaterialModal(false)}
+              className="rounded-xl border border-border px-3.5 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-secondary"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="rounded-xl bg-brand px-4 py-1.5 text-xs font-bold text-white hover:bg-brand-dark shadow-xs"
+            >
+              Assign Material
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   )
 }
