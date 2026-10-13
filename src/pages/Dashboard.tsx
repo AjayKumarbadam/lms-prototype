@@ -2,13 +2,12 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Calendar,
-  ChevronDown,
   LayoutGrid,
   ClipboardCheck,
   Target,
   UserCheck,
 } from 'lucide-react'
-import { motion, AnimatePresence } from 'motion/react'
+import { motion } from 'motion/react'
 import { useLms } from '../store/LmsStore'
 import { FacultyDashboard } from './faculty/FacultyDashboard'
 
@@ -183,8 +182,6 @@ export function Dashboard() {
   const { state } = useLms()
   const [adminView, setAdminView] = useState<'faculty' | 'student'>('faculty')
   const [insightTab, setInsightTab] = useState<'subjects' | 'communication'>('subjects')
-  const [selectedSemester, setSelectedSemester] = useState('Semester 6  2024–2026 (Current)')
-  const [showSemesterMenu, setShowSemesterMenu] = useState(false)
   const [hoveredScatter, setHoveredScatter] = useState<SubjectItem | null>(null)
 
   // 1. Direct Faculty Dashboard for Faculty Role
@@ -239,126 +236,19 @@ export function Dashboard() {
         title: 'B.Tech — Computer Science & Engineering',
       }
 
-    const semesters = [
-      'Semester 6  2024–2026 (Current)',
-      'Semester 5  2024–2025',
-      'Semester 4  2023–2024',
-      'Semester 3  2023–2024',
-    ]
-
     return (
       <div className="space-y-6 pb-12">
-        {/* 1. Academic Profile Header Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35 }}
-          className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#4A0B1C] via-[#6B1029] to-[#801432] p-6 text-white shadow-xl shadow-[#4A0B1C]/25 ring-1 ring-white/10"
-        >
-        {/* Subtle background ambient lights */}
-        <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-[#C9A227]/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-16 left-1/3 h-64 w-64 rounded-full bg-[#4A0B1C]/40 blur-3xl" />
-
-        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-          {/* Left: Avatar & Bio */}
-          <div className="flex items-center gap-4">
-            <div className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#C9A227] to-[#E5C158] p-0.5 shadow-md ring-4 ring-white/20">
-              <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-[#4A0B1C] text-xl font-bold text-amber-300">
-                <span className="text-2xl" role="img" aria-label="student avatar">
-                  👨‍🎓
-                </span>
-              </div>
-            </div>
-            <div>
-              <p className="text-[10px] font-bold tracking-widest text-[#C9A227] uppercase">
-                Academic Profile
-              </p>
-              <h1 className="mt-0.5 text-2xl font-bold tracking-tight text-white sm:text-3xl">
-                {currentStudent.name}
-              </h1>
-              <p className="mt-0.5 text-xs font-medium text-white/85 sm:text-sm">
-                {currentStudent.title || 'B.Tech — Computer Science & Engineering'}
-              </p>
-            </div>
-          </div>
-
-          {/* Right: Metadata Pills */}
-          <div className="flex flex-wrap items-center gap-2.5">
-            {/* Semester Dropdown Pill */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setShowSemesterMenu((prev) => !prev)}
-                className="flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3.5 py-2 text-left backdrop-blur-md transition hover:bg-white/20 active:scale-98"
-              >
-                <div>
-                  <span className="block text-[9px] font-bold tracking-wider text-[#C9A227] uppercase">
-                    Semester
-                  </span>
-                  <span className="flex items-center gap-1.5 text-xs font-semibold text-white">
-                    {selectedSemester}
-                    <ChevronDown size={14} className="text-[#C9A227]" />
-                  </span>
-                </div>
-              </button>
-
-              <AnimatePresence>
-                {showSemesterMenu && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 5 }}
-                    className="absolute right-0 top-full z-30 mt-1.5 w-64 rounded-xl border border-border bg-card p-1 text-foreground shadow-xl"
-                  >
-                    {semesters.map((s) => (
-                      <button
-                        key={s}
-                        onClick={() => {
-                          setSelectedSemester(s)
-                          setShowSemesterMenu(false)
-                        }}
-                        className={`w-full rounded-lg px-3 py-2 text-left text-xs font-medium transition ${
-                          selectedSemester === s
-                            ? 'bg-brand-soft font-semibold text-brand'
-                            : 'hover:bg-muted'
-                        }`}
-                      >
-                        {s}
-                      </button>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Roll No Pill */}
-            <div className="rounded-xl border border-white/20 bg-white/10 px-3.5 py-2 backdrop-blur-md">
-              <span className="block text-[9px] font-bold tracking-wider text-[#C9A227] uppercase">
-                Roll No
-              </span>
-              <span className="text-xs font-semibold text-white">
-                {currentStudent.studentId || 'CSE21B046'}
-              </span>
-            </div>
-
-            {/* Batch Pill */}
-            <div className="rounded-xl border border-white/20 bg-white/10 px-3.5 py-2 backdrop-blur-md">
-              <span className="block text-[9px] font-bold tracking-wider text-[#C9A227] uppercase">
-                Batch
-              </span>
-              <span className="text-xs font-semibold text-white">2021–2025</span>
-            </div>
-
-            {/* Section Pill */}
-            <div className="rounded-xl border border-white/20 bg-white/10 px-3.5 py-2 backdrop-blur-md">
-              <span className="block text-[9px] font-bold tracking-wider text-[#C9A227] uppercase">
-                Section
-              </span>
-              <span className="text-xs font-semibold text-white">B</span>
-            </div>
+        {/* Student Overview Header */}
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-text-heading">
+              Student Academic Dashboard
+            </h1>
+            <p className="mt-0.5 text-xs sm:text-sm font-medium text-muted-foreground">
+              Welcome back, {currentStudent.name} · {currentStudent.title || 'B.Tech — Computer Science & Engineering'}
+            </p>
           </div>
         </div>
-      </motion.div>
 
       {/* 2. "My Subjects" Section */}
       <section className="space-y-3.5">

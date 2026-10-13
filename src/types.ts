@@ -32,6 +32,10 @@ export type Person = {
   title?: string
   studentId?: string
   department?: string
+  semester?: string
+  batch?: string
+  section?: string
+  program?: string
 }
 
 export type Topic = {
