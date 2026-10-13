@@ -102,38 +102,36 @@ export function AiTutorSticky() {
 
   return (
     <>
-      {/* Persistent Sticky Floating Button - Circular Shape Ball */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
-        <motion.button
-          onClick={() => setOpen((prev) => !prev)}
-          whileHover={{ scale: 1.1, rotate: 3 }}
-          whileTap={{ scale: 0.92 }}
-          className="group relative flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-tr from-[#4A0B1C] via-[#6B1029] to-[#801432] text-white shadow-xl shadow-[#4A0B1C]/45 ring-4 ring-white/30 border border-brand-gold/60 backdrop-blur-sm transition-all hover:shadow-2xl hover:shadow-[#6B1029]/60"
-          aria-label="Ask AI Tutor"
-          title="Ask AI Academic Tutor"
-        >
-          {/* Subtle Outer Ping Glow */}
-          <span className="absolute inset-0 rounded-full bg-brand-gold/20 animate-ping opacity-60 pointer-events-none" />
+      {/* Persistent Sticky Floating Button - Circular Shape Ball matching user CSS specification */}
+      <motion.button
+        onClick={() => setOpen((prev) => !prev)}
+        whileHover={{ scale: 1.08, rotate: 2 }}
+        whileTap={{ scale: 0.94 }}
+        className="ai-tutor-button group relative bg-gradient-to-tr from-[#4A0B1C] via-[#6B1029] to-[#801432] text-white shadow-xl shadow-[#4A0B1C]/45 ring-4 ring-white/30 border border-brand-gold/60 backdrop-blur-sm transition-all hover:shadow-2xl hover:shadow-[#6B1029]/60"
+        aria-label="Ask AI Tutor"
+        title="Ask AI Academic Tutor"
+      >
+        {/* Subtle Outer Ping Glow */}
+        <span className="absolute inset-0 rounded-full bg-brand-gold/20 animate-ping opacity-60 pointer-events-none" />
 
-          {/* Bot Icon & Sparkle inside the Ball */}
-          <div className="relative flex items-center justify-center">
-            {open ? (
-              <X size={22} className="text-white transition-transform group-hover:rotate-90" />
-            ) : (
-              <>
-                <Bot size={24} className="text-white drop-shadow-sm transition-transform group-hover:scale-110" />
-                <Sparkles
-                  size={13}
-                  className="absolute -top-2.5 -right-2 text-[#C9A227] animate-pulse"
-                />
-              </>
-            )}
-          </div>
+        {/* Bot Icon & Sparkle inside the Ball */}
+        <div className="relative flex items-center justify-center">
+          {open ? (
+            <X size={24} className="text-white transition-transform group-hover:rotate-90" />
+          ) : (
+            <>
+              <Bot size={26} className="text-white drop-shadow-sm transition-transform group-hover:scale-110" />
+              <Sparkles
+                size={14}
+                className="absolute -top-3 -right-2.5 text-[#C9A227] animate-pulse"
+              />
+            </>
+          )}
+        </div>
 
-          {/* Live Online Status Indicator */}
-          <span className="absolute top-1 left-1 h-3 w-3 rounded-full bg-emerald-400 ring-2 ring-[#4A0B1C] shadow-xs" />
-        </motion.button>
-      </div>
+        {/* Live Online Status Indicator */}
+        <span className="absolute top-1.5 left-1.5 h-3.5 w-3.5 rounded-full bg-emerald-400 ring-2 ring-[#4A0B1C] shadow-xs" />
+      </motion.button>
 
       {/* AI Tutor Interactive Chat Slide-Over Drawer */}
       <AnimatePresence>
@@ -143,7 +141,7 @@ export function AiTutorSticky() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.96 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed bottom-22 right-6 z-50 flex h-[580px] w-[min(calc(100vw-2rem),430px)] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl shadow-[#4A0B1C]/25 ring-1 ring-black/5"
+            className="fixed bottom-[96px] right-6 z-[1001] flex h-[580px] w-[min(calc(100vw-2rem),430px)] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl shadow-[#4A0B1C]/25 ring-1 ring-black/5"
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-[#4A0B1C] bg-gradient-to-r from-[#4A0B1C] via-[#6B1029] to-[#801432] px-4 py-3.5 text-white">

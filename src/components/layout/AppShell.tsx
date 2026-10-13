@@ -216,8 +216,8 @@ export function AppShell() {
           menu ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
-        {/* SASI LMS Brand Header in Brand Burgundy Color to seamlessly mix into the main navbar */}
-        <div className="flex h-[72px] shrink-0 items-center justify-between bg-brand nav-glow text-white border-r border-white/10 px-4">
+        {/* SASI LMS Brand Header in Single Solid Brand Burgundy Color matching main navbar */}
+        <div className="flex h-[72px] shrink-0 items-center justify-between bg-[#6B1029] text-white px-4">
           <div className="flex items-center gap-3">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-base font-extrabold text-brand shadow-sm ring-2 ring-brand-gold">
               S
@@ -293,8 +293,8 @@ export function AppShell() {
 
       {/* 3. Main Dashboard Area - Starts with Search Bar Header */}
       <div className="flex-1 min-w-0 flex flex-col min-h-screen bg-background">
-        {/* Main Dashboard Sticky Header with Brand Burgundy Color (nav-glow) - Height matches sidebar logo box (h-[72px]) */}
-        <header className="nav-glow sticky top-0 z-30 flex h-[72px] shrink-0 items-center gap-3 px-4 text-white shadow-md lg:px-8">
+        {/* Main Dashboard Sticky Header with Single Solid Brand Burgundy Color (#6B1029) - Matches sidebar logo box */}
+        <header className="sticky top-0 z-30 flex h-[72px] shrink-0 items-center gap-3 px-4 bg-[#6B1029] text-white shadow-md lg:px-8">
           {/* Mobile Menu Toggle Button */}
           <button
             className="rounded-lg p-2 text-white hover:bg-white/10 lg:hidden shrink-0"

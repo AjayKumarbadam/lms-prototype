@@ -244,9 +244,7 @@
 }
 
 .nav-glow {
-  background:
-    radial-gradient(1200px 120px at 10% -20%, rgba(201, 162, 39, 0.2), transparent),
-    linear-gradient(90deg, #4A0B1C, #6B1029 45%, #7D1532);
+  background-color: #6B1029;
 }
 
 .card-hover {
@@ -263,9 +261,23 @@
 }
 
 .table-wrap {
-  overflow: auto;
+  overflow-x: auto;
 }
 
 .table-wrap table {
-  min-width: 920px;
+  min-width: 1240px;
+}
+
+.ai-tutor-button {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  cursor: pointer;
 }

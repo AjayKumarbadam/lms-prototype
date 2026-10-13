@@ -94,85 +94,96 @@ export function CourseList() {
             }
           />
         ) : (
-          <div className="table-wrap rounded-xl border border-border overflow-hidden">
-            <table className="w-full text-left text-sm">
+          <div className="table-wrap rounded-xl border border-border overflow-x-auto bg-card shadow-2xs">
+            <table className="w-full text-left text-sm min-w-[1260px]">
               <thead className="bg-secondary text-primary border-b border-border">
                 <tr>
-                  {['Course', 'Code', 'Institution', 'Dept', 'Program', 'Semester', 'Section', 'Faculty', 'Enrollment', 'Status', 'Actions'].map((h) => (
-                    <th key={h} className="px-3.5 py-3 font-semibold text-xs tracking-wider uppercase">
-                      {h}
-                    </th>
-                  ))}
+                  <th className="px-4 py-3 font-semibold text-xs tracking-wider uppercase min-w-[200px]">Course</th>
+                  <th className="px-3.5 py-3 font-semibold text-xs tracking-wider uppercase min-w-[85px] whitespace-nowrap">Code</th>
+                  <th className="px-3.5 py-3 font-semibold text-xs tracking-wider uppercase min-w-[170px]">Institution</th>
+                  <th className="px-3.5 py-3 font-semibold text-xs tracking-wider uppercase min-w-[150px]">Dept</th>
+                  <th className="px-3.5 py-3 font-semibold text-xs tracking-wider uppercase min-w-[180px]">Program</th>
+                  <th className="px-3.5 py-3 font-semibold text-xs tracking-wider uppercase min-w-[130px] whitespace-nowrap">Semester</th>
+                  <th className="px-3.5 py-3 font-semibold text-xs tracking-wider uppercase min-w-[75px] whitespace-nowrap text-center">Section</th>
+                  <th className="px-3.5 py-3 font-semibold text-xs tracking-wider uppercase min-w-[140px] whitespace-nowrap">Faculty</th>
+                  <th className="px-3.5 py-3 font-semibold text-xs tracking-wider uppercase min-w-[95px] whitespace-nowrap text-center">Enrollment</th>
+                  <th className="px-3.5 py-3 font-semibold text-xs tracking-wider uppercase min-w-[110px] whitespace-nowrap text-center">Status</th>
+                  <th className="px-4 py-3 font-semibold text-xs tracking-wider uppercase min-w-[175px] whitespace-nowrap text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border bg-card">
                 {rows.map((c) => (
                   <tr key={c.id} className="transition-colors hover:bg-brand-soft/60">
-                    <td className="px-3.5 py-3 font-semibold text-brand">
+                    <td className="px-4 py-3.5 font-bold text-brand min-w-[200px]">
                       <Link to={`/lms/courses/${c.id}`} className="hover:underline">
                         {c.title}
                       </Link>
                     </td>
-                    <td className="px-3.5 py-3 text-muted-foreground font-medium">{c.code}</td>
-                    <td className="px-3.5 py-3 text-foreground">{c.institution}</td>
-                    <td className="px-3.5 py-3 text-foreground">{c.department}</td>
-                    <td className="px-3.5 py-3 text-foreground">{c.program}</td>
-                    <td className="px-3.5 py-3 text-muted-foreground">{c.semester}</td>
-                    <td className="px-3.5 py-3 text-foreground font-medium">{c.section}</td>
-                    <td className="px-3.5 py-3 text-foreground">{person(c.facultyIds[0] ?? '')}</td>
-                    <td className="px-3.5 py-3 text-foreground font-semibold">{c.studentIds.length}</td>
-                    <td className="px-3.5 py-3">
+                    <td className="px-3.5 py-3.5 text-muted-foreground font-semibold whitespace-nowrap">{c.code}</td>
+                    <td className="px-3.5 py-3.5 text-foreground leading-snug">{c.institution}</td>
+                    <td className="px-3.5 py-3.5 text-foreground leading-snug">{c.department}</td>
+                    <td className="px-3.5 py-3.5 text-foreground leading-snug">{c.program}</td>
+                    <td className="px-3.5 py-3.5 text-muted-foreground whitespace-nowrap">{c.semester}</td>
+                    <td className="px-3.5 py-3.5 text-foreground font-semibold text-center whitespace-nowrap">{c.section}</td>
+                    <td className="px-3.5 py-3.5 text-foreground whitespace-nowrap">{person(c.facultyIds[0] ?? '')}</td>
+                    <td className="px-3.5 py-3.5 text-foreground font-bold text-center whitespace-nowrap">{c.studentIds.length}</td>
+                    <td className="px-3.5 py-3.5 text-center whitespace-nowrap">
                       <Badge status={c.status} />
                     </td>
-                    <td className="px-3.5 py-3">
-                      <div className="flex flex-wrap items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          className="h-8 w-8 p-0 text-muted-foreground hover:bg-brand-soft hover:text-brand"
+                    <td className="px-4 py-3.5 min-w-[175px] whitespace-nowrap text-right">
+                      <div className="inline-flex items-center justify-end gap-1.5 whitespace-nowrap shrink-0">
+                        <button
+                          type="button"
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-white text-muted-foreground hover:bg-brand-soft hover:text-brand hover:border-brand/40 shadow-2xs transition"
                           onClick={() => nav(`/lms/courses/${c.id}`)}
+                          title="View Course"
                           aria-label="View"
                         >
                           <Eye size={15} />
-                        </Button>
+                        </button>
                         {(can(state.role, 'course.edit') || state.role === 'administrator') && (
                           <>
-                            <Button
-                              variant="ghost"
-                              className="h-8 w-8 p-0 text-muted-foreground hover:bg-brand-soft hover:text-brand"
+                            <button
+                              type="button"
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-white text-muted-foreground hover:bg-brand-soft hover:text-brand hover:border-brand/40 shadow-2xs transition"
                               onClick={() => nav(`/lms/courses/${c.id}/edit`)}
+                              title="Edit Course"
                               aria-label="Edit"
                             >
                               <Pencil size={15} />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              className="h-8 w-8 p-0 text-muted-foreground hover:bg-brand-soft hover:text-brand"
+                            </button>
+                            <button
+                              type="button"
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-white text-muted-foreground hover:bg-brand-soft hover:text-brand hover:border-brand/40 shadow-2xs transition"
                               onClick={() => {
                                 dispatch({ type: 'CLONE_COURSE', id: c.id })
                                 toast('success', 'Draft clone created')
                               }}
+                              title="Clone Course"
                               aria-label="Clone"
                             >
                               <Copy size={15} />
-                            </Button>
+                            </button>
                             {c.status === 'draft' ? (
-                              <Button
-                                variant="ghost"
-                                className="px-2 py-1 text-xs font-semibold text-success hover:bg-emerald-50"
+                              <button
+                                type="button"
+                                className="inline-flex h-8 items-center justify-center rounded-lg border border-emerald-300 bg-emerald-50 px-2.5 text-xs font-bold text-emerald-700 hover:bg-emerald-100 shadow-2xs transition"
                                 onClick={() => setConfirm({ id: c.id, action: 'publish' })}
+                                title="Publish Course"
                               >
                                 Publish
-                              </Button>
+                              </button>
                             ) : null}
                             {c.status !== 'archived' ? (
-                              <Button
-                                variant="ghost"
-                                className="h-8 w-8 p-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                              <button
+                                type="button"
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-white text-muted-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 shadow-2xs transition"
                                 onClick={() => setConfirm({ id: c.id, action: 'archive' })}
+                                title="Archive Course"
                                 aria-label="Archive"
                               >
                                 <Archive size={15} />
-                              </Button>
+                              </button>
                             ) : null}
                           </>
                         )}
