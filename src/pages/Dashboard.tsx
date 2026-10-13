@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
 import { useLms } from '../store/LmsStore'
+import { FacultyDashboard } from './faculty/FacultyDashboard'
 
 /**
  * ==========================================================================================
@@ -180,53 +181,80 @@ function DualRingGauge({
 
 export function Dashboard() {
   const { state } = useLms()
+  const [adminView, setAdminView] = useState<'faculty' | 'student'>('faculty')
   const [insightTab, setInsightTab] = useState<'subjects' | 'communication'>('subjects')
   const [selectedSemester, setSelectedSemester] = useState('Semester 6  2024–2026 (Current)')
   const [showSemesterMenu, setShowSemesterMenu] = useState(false)
   const [hoveredScatter, setHoveredScatter] = useState<SubjectItem | null>(null)
 
-  const currentStudent =
-    state.people.find((p) => p.id === state.currentUserId) ||
-    state.people.find((p) => p.role === 'student') || {
-      name: 'Aarav Sharma',
-      studentId: 'CSE21B046',
-      title: 'B.Tech — Computer Science & Engineering',
-    }
+  // 1. Direct Faculty Dashboard for Faculty Role
+  if (state.role === 'faculty') {
+    return <FacultyDashboard />
+  }
 
-  const semesters = [
-    'Semester 6  2024–2026 (Current)',
-    'Semester 5  2024–2025',
-    'Semester 4  2023–2024',
-    'Semester 3  2023–2024',
-  ]
-
-  return (
-    <div className="space-y-6 pb-12">
-      {/* Role Notice for Admin / Faculty preview */}
-      {state.role !== 'student' && (
-        <div className="flex items-center justify-between rounded-xl border border-brand-border bg-brand-soft px-4 py-2.5 text-xs text-brand shadow-2xs">
+  // 2. Administrator can toggle between Faculty Portal and Student View
+  if (state.role === 'administrator') {
+    return (
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand/20 bg-brand-soft/70 px-4 py-2.5 text-xs text-brand shadow-2xs">
           <div className="flex items-center gap-2">
             <UserCheck size={16} className="text-brand" />
             <span>
-              You are currently signed in as <strong>{state.role}</strong>. Previewing the student academic dashboard for <strong>{currentStudent.name}</strong>.
+              Signed in as <strong>Administrator</strong>. Select dashboard perspective:
             </span>
           </div>
-          <Link
-            to="/lms/courses"
-            className="font-semibold text-brand hover:text-brand-dark hover:underline"
-          >
-            Manage Courses →
-          </Link>
+          <div className="flex items-center gap-1 rounded-full border border-border bg-white p-1">
+            <button
+              onClick={() => setAdminView('faculty')}
+              className={`rounded-full px-3 py-1 font-bold transition ${
+                adminView === 'faculty' ? 'bg-brand text-white shadow-xs' : 'text-muted-foreground hover:text-text-heading'
+              }`}
+            >
+              Faculty Dashboard
+            </button>
+            <button
+              onClick={() => setAdminView('student')}
+              className={`rounded-full px-3 py-1 font-bold transition ${
+                adminView === 'student' ? 'bg-brand text-white shadow-xs' : 'text-muted-foreground hover:text-text-heading'
+              }`}
+            >
+              Student Academic View
+            </button>
+          </div>
         </div>
-      )}
 
-      {/* 1. Academic Profile Header Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35 }}
-        className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#4A0B1C] via-[#6B1029] to-[#801432] p-6 text-white shadow-xl shadow-[#4A0B1C]/25 ring-1 ring-white/10"
-      >
+        {adminView === 'faculty' ? <FacultyDashboard /> : renderStudentDashboard()}
+      </div>
+    )
+  }
+
+  return renderStudentDashboard()
+
+  function renderStudentDashboard() {
+    const currentStudent =
+      state.people.find((p) => p.id === state.currentUserId) ||
+      state.people.find((p) => p.role === 'student') || {
+        name: 'Aarav Sharma',
+        studentId: 'CSE21B046',
+        title: 'B.Tech — Computer Science & Engineering',
+      }
+
+    const semesters = [
+      'Semester 6  2024–2026 (Current)',
+      'Semester 5  2024–2025',
+      'Semester 4  2023–2024',
+      'Semester 3  2023–2024',
+    ]
+
+    return (
+      <div className="space-y-6 pb-12">
+        {/* 1. Academic Profile Header Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35 }}
+          className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#4A0B1C] via-[#6B1029] to-[#801432] p-6 text-white shadow-xl shadow-[#4A0B1C]/25 ring-1 ring-white/10"
+        >
         {/* Subtle background ambient lights */}
         <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-[#C9A227]/20 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-16 left-1/3 h-64 w-64 rounded-full bg-[#4A0B1C]/40 blur-3xl" />
@@ -690,3 +718,5 @@ export function Dashboard() {
     </div>
   )
 }
+}
+
