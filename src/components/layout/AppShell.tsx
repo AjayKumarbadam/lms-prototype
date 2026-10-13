@@ -8,6 +8,7 @@ import {
   HelpCircle,
   LayoutDashboard,
   Library,
+  LogOut,
   Menu,
   Search,
   Settings,
@@ -28,16 +29,60 @@ const nav = [
 ]
 
 export function AppShell() {
-  const { state, dispatch, toast, toasts, dismiss, person } = useLms()
+  const { state, dispatch, toast, toasts, dismiss } = useLms()
   const navTo = useNavigate()
   const [menu, setMenu] = useState(false)
   const [profile, setProfile] = useState(false)
   const [notes, setNotes] = useState(false)
   const [help, setHelp] = useState(false)
+  const [logoutConfirm, setLogoutConfirm] = useState(false)
   const [q, setQ] = useState('')
 
   const me = state.people.find((p) => p.id === state.currentUserId)
   const unread = state.notifications.filter((n) => !n.read).length
+
+  // Account editing form state
+  const [editName, setEditName] = useState('')
+  const [editEmail, setEditEmail] = useState('')
+  const [editStudentId, setEditStudentId] = useState('')
+  const [editDepartment, setEditDepartment] = useState('')
+  const [editRole, setEditRole] = useState<Role>('student')
+
+  const openProfileModal = () => {
+    setEditName(me?.name ?? '')
+    setEditEmail(me?.email ?? '')
+    setEditStudentId(me?.studentId ?? '')
+    setEditDepartment(me?.department ?? '')
+    setEditRole((me?.role as Role) ?? state.role)
+    setProfile(true)
+  }
+
+  const handleSaveAccount = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editName.trim()) {
+      toast('error', 'Name cannot be empty')
+      return
+    }
+    dispatch({
+      type: 'UPDATE_PERSON',
+      person: {
+        id: me?.id || state.currentUserId,
+        name: editName.trim(),
+        email: editEmail.trim(),
+        studentId: editStudentId.trim(),
+        department: editDepartment.trim(),
+        role: editRole,
+      },
+    })
+    toast('success', 'Account information updated successfully')
+    setProfile(false)
+  }
+
+  const handleLogout = () => {
+    setLogoutConfirm(false)
+    toast('info', 'Logged out of session')
+    navTo('/lms/dashboard')
+  }
 
   const searchHits = useMemo(() => {
     if (q.trim().length < 2) return []
@@ -67,8 +112,8 @@ export function AppShell() {
           menu ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
-        {/* SASI LMS Brand Header in Single White Color with Border */}
-        <div className="flex items-center justify-between border-b border-border bg-white px-4 py-4">
+        {/* SASI LMS Brand Header in Single White Color with Border - Height matches Main Navbar (h-[72px]) */}
+        <div className="flex h-[72px] shrink-0 items-center justify-between border-b border-border bg-white px-4">
           <div className="flex items-center gap-3">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand text-base font-extrabold text-white shadow-sm ring-2 ring-brand-gold">
               S
@@ -110,28 +155,42 @@ export function AppShell() {
           ))}
         </nav>
 
-        {/* Sidebar Footer User Info */}
-        <div className="border-t border-border bg-white p-3.5">
+        {/* Sidebar Footer User Info & Logout Button */}
+        <div className="border-t border-border bg-white p-3 flex items-center gap-2">
           <button
             type="button"
-            onClick={() => setProfile(true)}
-            className="flex w-full items-center gap-2.5 rounded-xl bg-secondary/60 p-2 text-left transition hover:bg-secondary"
+            onClick={openProfileModal}
+            className="flex flex-1 min-w-0 items-center gap-2.5 rounded-xl bg-secondary/60 p-2 text-left transition hover:bg-secondary hover:ring-1 hover:ring-brand-gold/40 group"
+            title="Click to edit account details"
           >
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand text-xs font-bold text-white shadow-xs">
-              {me?.name.slice(0, 1)}
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand text-xs font-bold text-white shadow-xs group-hover:scale-105 transition-transform">
+              {me?.name ? me.name.slice(0, 1).toUpperCase() : 'U'}
             </span>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-bold text-text-heading">{me?.name}</p>
+              <p className="truncate text-xs font-bold text-text-heading group-hover:text-brand transition-colors">
+                {me?.name || 'My Account'}
+              </p>
               <p className="text-[10px] font-medium capitalize text-muted-foreground">{state.role}</p>
             </div>
+          </button>
+
+          {/* Logout Button beside account field */}
+          <button
+            type="button"
+            onClick={() => setLogoutConfirm(true)}
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-border bg-white text-muted-foreground transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 shadow-xs"
+            title="Log Out"
+            aria-label="Log out"
+          >
+            <LogOut size={16} />
           </button>
         </div>
       </aside>
 
       {/* 3. Main Dashboard Area - Starts with Search Bar Header */}
       <div className="flex-1 min-w-0 flex flex-col min-h-screen bg-background">
-        {/* Main Dashboard Sticky Header with Brand Burgundy Color (nav-glow) */}
-        <header className="nav-glow sticky top-0 z-30 flex h-16 items-center justify-between gap-4 px-4 text-white shadow-md lg:px-8">
+        {/* Main Dashboard Sticky Header with Brand Burgundy Color (nav-glow) - Height matches sidebar logo box (h-[72px]) */}
+        <header className="nav-glow sticky top-0 z-30 flex h-[72px] shrink-0 items-center justify-between gap-4 px-4 text-white shadow-md lg:px-8">
           {/* Mobile Menu Toggle Button */}
           <button
             className="rounded-lg p-2 text-white hover:bg-white/10 lg:hidden"
@@ -178,7 +237,7 @@ export function AppShell() {
             )}
           </div>
 
-          {/* Right Header Controls: Notifications, Help, Role Selector, User Profile */}
+          {/* Right Header Controls: Notifications, Help, Role Selector (Account removed from here) */}
           <div className="flex items-center gap-1.5 sm:gap-2">
             <button
               className="relative rounded-lg p-2 text-white hover:bg-white/10 transition"
@@ -215,20 +274,6 @@ export function AppShell() {
                 <option value="student">Student</option>
               </select>
             </div>
-
-            {/* Profile Avatar Trigger */}
-            <button
-              className="flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-2.5 py-1.5 backdrop-blur-sm transition hover:bg-white/15"
-              onClick={() => setProfile(true)}
-            >
-              <span className="grid h-7 w-7 place-items-center rounded-full bg-white text-xs font-bold text-brand shadow-xs">
-                {me?.name.slice(0, 1)}
-              </span>
-              <span className="hidden text-left text-xs sm:block">
-                <span className="block font-bold text-white">{me?.name}</span>
-                <span className="block text-[10px] capitalize text-rose-100">{state.role}</span>
-              </span>
-            </button>
           </div>
         </header>
 
@@ -241,27 +286,102 @@ export function AppShell() {
       {/* Global Persistent Sticky AI Tutor */}
       <AiTutorSticky />
 
-      <Modal open={profile} title="Demo profile & role" onClose={() => setProfile(false)}>
-        <p className="mb-3 text-sm text-muted">Role switching is a demonstration control, not production authentication.</p>
-        <label className="mb-3 block text-sm font-medium text-navy">
-          Active demo role
-          <select
-            className="mt-1 w-full rounded-lg border border-line px-3 py-2 text-charcoal"
-            value={state.role}
-            onChange={(e) => {
-              dispatch({ type: 'SET_ROLE', role: e.target.value as Role })
-              toast('info', `Now viewing as ${e.target.value}`)
-            }}
-          >
-            <option value="administrator">Administrator</option>
-            <option value="faculty">Faculty (Dr. Rajesh Iyer)</option>
-            <option value="student">Student (Aarav Sharma)</option>
-          </select>
-        </label>
-        <p className="text-sm text-charcoal">Signed in as {person(state.currentUserId)}</p>
-        <div className="mt-4 flex justify-end">
-          <Button variant="secondary" onClick={() => setProfile(false)}>
-            Close
+      {/* Editable Account Information Modal */}
+      <Modal open={profile} title="Account Information & Profile" onClose={() => setProfile(false)}>
+        <form onSubmit={handleSaveAccount} className="space-y-4">
+          <div className="flex items-center gap-3.5 rounded-xl bg-secondary/60 p-3 border border-border">
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-brand text-base font-bold text-white shadow-xs">
+              {editName ? editName.slice(0, 1).toUpperCase() : 'U'}
+            </div>
+            <div className="min-w-0 flex-1">
+              <h4 className="text-sm font-bold text-text-heading truncate">{editName || 'User Account'}</h4>
+              <p className="text-xs text-muted-foreground capitalize">{editRole} · SASI Institute</p>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-text-heading mb-1">Full Name</label>
+            <input
+              type="text"
+              required
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              className="w-full rounded-xl border border-border bg-white px-3 py-2 text-xs font-medium text-foreground transition focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+              placeholder="Enter your full name"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-text-heading mb-1">Email Address</label>
+            <input
+              type="email"
+              required
+              value={editEmail}
+              onChange={(e) => setEditEmail(e.target.value)}
+              className="w-full rounded-xl border border-border bg-white px-3 py-2 text-xs font-medium text-foreground transition focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+              placeholder="name@sasi.edu.in"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold text-text-heading mb-1">Student / Employee ID</label>
+              <input
+                type="text"
+                value={editStudentId}
+                onChange={(e) => setEditStudentId(e.target.value)}
+                className="w-full rounded-xl border border-border bg-white px-3 py-2 text-xs font-medium text-foreground transition focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                placeholder="e.g. SASI-2024-001"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-text-heading mb-1">Department</label>
+              <input
+                type="text"
+                value={editDepartment}
+                onChange={(e) => setEditDepartment(e.target.value)}
+                className="w-full rounded-xl border border-border bg-white px-3 py-2 text-xs font-medium text-foreground transition focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                placeholder="e.g. Computer Science & Eng."
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-text-heading mb-1">Active Role</label>
+            <select
+              value={editRole}
+              onChange={(e) => setEditRole(e.target.value as Role)}
+              className="w-full rounded-xl border border-border bg-white px-3 py-2 text-xs font-semibold text-brand transition focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+            >
+              <option value="administrator">Administrator</option>
+              <option value="faculty">Faculty</option>
+              <option value="student">Student</option>
+            </select>
+          </div>
+
+          <div className="mt-5 flex items-center justify-end gap-2.5 pt-3 border-t border-border">
+            <Button variant="secondary" type="button" onClick={() => setProfile(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" type="submit">
+              Save Changes
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Logout Confirmation Modal */}
+      <Modal open={logoutConfirm} title="Confirm Logout" onClose={() => setLogoutConfirm(false)}>
+        <p className="text-sm text-foreground">
+          Are you sure you want to log out of SASI LMS? You can log back in at any time.
+        </p>
+        <div className="mt-5 flex items-center justify-end gap-2.5">
+          <Button variant="secondary" onClick={() => setLogoutConfirm(false)}>
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={handleLogout}>
+            Log Out
           </Button>
         </div>
       </Modal>

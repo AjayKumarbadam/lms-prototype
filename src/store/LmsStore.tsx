@@ -8,6 +8,7 @@ import type {
   GradeEntry,
   LmsState,
   Material,
+  Person,
   Question,
   Quiz,
   QuizAttempt,
@@ -19,6 +20,7 @@ import type {
 type Action =
   | { type: 'HYDRATE'; state: LmsState }
   | { type: 'SET_ROLE'; role: Role }
+  | { type: 'UPDATE_PERSON'; person: Partial<Person> & { id: string } }
   | { type: 'UPSERT_COURSE'; course: Course }
   | { type: 'CLONE_COURSE'; id: string }
   | { type: 'SET_COURSE_STATUS'; id: string; status: Course['status'] }
@@ -47,6 +49,17 @@ function reducer(state: LmsState, action: Action): LmsState {
       const user =
         action.role === 'administrator' ? 'u-admin' : action.role === 'faculty' ? 'u-fac-1' : 'u-stu-1'
       return { ...state, role: action.role, currentUserId: user }
+    }
+    case 'UPDATE_PERSON': {
+      const updatedRole =
+        action.person.id === state.currentUserId && action.person.role && action.person.role !== 'ta'
+          ? (action.person.role as Role)
+          : state.role
+      return {
+        ...state,
+        role: updatedRole,
+        people: state.people.map((p) => (p.id === action.person.id ? { ...p, ...action.person } : p)),
+      }
     }
     case 'UPSERT_COURSE': {
       const i = state.courses.findIndex((c) => c.id === action.course.id)
