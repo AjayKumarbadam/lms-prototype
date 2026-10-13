@@ -61,28 +61,28 @@ export function AppShell() {
         />
       )}
 
-      {/* 2. Side Dashboard (Sidebar) - Desktop Sticky & Mobile Drawer */}
+      {/* 2. Side Dashboard (Sidebar) - Desktop Sticky & Mobile Drawer (Single White Theme) */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex h-screen w-72 shrink-0 flex-col border-r border-border bg-card shadow-sm transition-transform duration-200 lg:sticky lg:top-0 lg:z-30 lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex h-screen w-72 shrink-0 flex-col border-r border-border bg-white shadow-sm transition-transform duration-200 lg:sticky lg:top-0 lg:z-30 lg:translate-x-0 ${
           menu ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
-        {/* SASI LMS Brand Header integrated directly into the Side Dashboard */}
-        <div className="nav-glow flex items-center justify-between px-4 py-4 text-white shadow-xs">
+        {/* SASI LMS Brand Header in Single White Color with Border */}
+        <div className="flex items-center justify-between border-b border-border bg-white px-4 py-4">
           <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-base font-extrabold text-brand shadow-sm ring-2 ring-brand-gold">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand text-base font-extrabold text-white shadow-sm ring-2 ring-brand-gold">
               S
             </div>
             <div className="min-w-0">
-              <h2 className="text-sm font-bold leading-none tracking-tight text-white">SASI LMS</h2>
-              <p className="mt-1 text-[11px] font-medium text-brand-gold-soft truncate">
+              <h2 className="text-sm font-bold leading-none tracking-tight text-text-heading">SASI LMS</h2>
+              <p className="mt-1 text-[11px] font-semibold text-muted-foreground truncate">
                 Learning · ERP Companion
               </p>
             </div>
           </div>
           <button
             onClick={() => setMenu(false)}
-            className="rounded-lg p-1.5 text-white/80 hover:bg-white/10 lg:hidden"
+            className="rounded-lg p-1.5 text-muted-foreground hover:bg-secondary lg:hidden"
             aria-label="Close menu"
           >
             <X size={18} />
@@ -90,7 +90,7 @@ export function AppShell() {
         </div>
 
         {/* Sidebar Nav Links */}
-        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+        <nav className="flex-1 space-y-1 overflow-y-auto bg-white px-3 py-4">
           {nav.map((item) => (
             <NavLink
               key={item.to}
@@ -111,7 +111,7 @@ export function AppShell() {
         </nav>
 
         {/* Sidebar Footer User Info */}
-        <div className="border-t border-border p-3.5">
+        <div className="border-t border-border bg-white p-3.5">
           <button
             type="button"
             onClick={() => setProfile(true)}
@@ -130,11 +130,11 @@ export function AppShell() {
 
       {/* 3. Main Dashboard Area - Starts with Search Bar Header */}
       <div className="flex-1 min-w-0 flex flex-col min-h-screen bg-background">
-        {/* Main Dashboard Sticky Header Starting with Search Bar */}
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b border-border bg-card/90 px-4 backdrop-blur-md lg:px-8">
+        {/* Main Dashboard Sticky Header with Brand Burgundy Color (nav-glow) */}
+        <header className="nav-glow sticky top-0 z-30 flex h-16 items-center justify-between gap-4 px-4 text-white shadow-md lg:px-8">
           {/* Mobile Menu Toggle Button */}
           <button
-            className="rounded-lg p-2 text-foreground hover:bg-secondary lg:hidden"
+            className="rounded-lg p-2 text-white hover:bg-white/10 lg:hidden"
             onClick={() => setMenu(true)}
             aria-label="Open menu"
           >
@@ -148,7 +148,7 @@ export function AppShell() {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search courses, materials, assignments..."
-              className="w-full rounded-xl border border-border bg-input-background py-2 pl-9 pr-8 text-xs text-foreground placeholder:text-muted-foreground transition focus:border-brand focus:bg-card focus:outline-none focus:ring-2 focus:ring-brand-gold/40 sm:text-sm"
+              className="w-full rounded-xl border border-white/20 bg-white py-2 pl-9 pr-8 text-xs text-foreground placeholder:text-muted-foreground shadow-sm transition focus:outline-none focus:ring-2 focus:ring-brand-gold sm:text-sm"
             />
             {q && (
               <button
@@ -181,18 +181,18 @@ export function AppShell() {
           {/* Right Header Controls: Notifications, Help, Role Selector, User Profile */}
           <div className="flex items-center gap-1.5 sm:gap-2">
             <button
-              className="relative rounded-lg p-2 text-foreground hover:bg-secondary transition"
+              className="relative rounded-lg p-2 text-white hover:bg-white/10 transition"
               onClick={() => setNotes(true)}
               aria-label="Notifications"
             >
               <Bell size={18} />
               {unread > 0 && (
-                <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-brand ring-2 ring-card" />
+                <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-amber-300 ring-2 ring-brand-dark" />
               )}
             </button>
 
             <button
-              className="rounded-lg p-2 text-foreground hover:bg-secondary transition"
+              className="rounded-lg p-2 text-white hover:bg-white/10 transition"
               onClick={() => setHelp(true)}
               aria-label="Help"
             >
@@ -201,9 +201,9 @@ export function AppShell() {
 
             {/* Role Switcher Dropdown */}
             <div className="hidden items-center gap-1.5 sm:flex">
-              <span className="text-xs text-muted-foreground">Role:</span>
+              <span className="text-xs text-rose-100">Role:</span>
               <select
-                className="rounded-lg border border-border bg-secondary px-2.5 py-1 text-xs font-semibold text-brand transition focus:border-brand focus:outline-none"
+                className="rounded-lg border border-white/20 bg-white px-2.5 py-1 text-xs font-semibold text-brand shadow-xs transition focus:outline-none"
                 value={state.role}
                 onChange={(e) => {
                   dispatch({ type: 'SET_ROLE', role: e.target.value as Role })
@@ -218,15 +218,15 @@ export function AppShell() {
 
             {/* Profile Avatar Trigger */}
             <button
-              className="flex items-center gap-2 rounded-xl border border-border bg-secondary/50 px-2.5 py-1.5 transition hover:bg-secondary"
+              className="flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-2.5 py-1.5 backdrop-blur-sm transition hover:bg-white/15"
               onClick={() => setProfile(true)}
             >
-              <span className="grid h-7 w-7 place-items-center rounded-full bg-brand text-xs font-bold text-white shadow-xs">
+              <span className="grid h-7 w-7 place-items-center rounded-full bg-white text-xs font-bold text-brand shadow-xs">
                 {me?.name.slice(0, 1)}
               </span>
               <span className="hidden text-left text-xs sm:block">
-                <span className="block font-bold text-text-heading">{me?.name}</span>
-                <span className="block text-[10px] capitalize text-muted-foreground">{state.role}</span>
+                <span className="block font-bold text-white">{me?.name}</span>
+                <span className="block text-[10px] capitalize text-rose-100">{state.role}</span>
               </span>
             </button>
           </div>
