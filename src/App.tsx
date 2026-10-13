@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { LmsProvider } from './store/LmsStore'
 import { AppShell } from './components/layout/AppShell'
 import { Dashboard } from './pages/Dashboard'
+import { FacultyDashboard } from './pages/faculty/FacultyDashboard'
 import { CourseList } from './pages/courses/CourseList'
 import { CourseForm } from './pages/courses/CourseForm'
 import { CourseDetails } from './pages/courses/CourseDetails'
@@ -52,6 +53,7 @@ export default function App() {
           <Route path="/" element={<Navigate to="/lms/dashboard" replace />} />
           <Route path="/lms" element={<AppShell />}>
             <Route path="dashboard" element={<Dashboard />} />
+            <Route path="cohorts" element={<FacultyDashboard initialTab="cohorts" />} />
             <Route path="courses" element={<CourseList />} />
             <Route path="courses/new" element={<CourseForm mode="create" />} />
             <Route path="courses/import" element={<ImportExport />} />

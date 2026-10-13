@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import {
   BookOpen,
   GraduationCap,
@@ -15,6 +15,7 @@ import {
   FileText,
   CheckCircle2,
   Clock,
+  Check,
 } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useLms } from '../../store/LmsStore'
@@ -240,6 +241,116 @@ const STUDENT_ROSTER = [
     status: 'Good Standing',
     atRisk: false,
   },
+  {
+    id: 'stu-7',
+    name: 'Kiran Reddy',
+    rollNo: '21SITE011',
+    section: 'CSE-A',
+    subject: 'CS201 Data Structures',
+    avgScore: 41,
+    practicePct: 35,
+    status: 'At Risk',
+    atRisk: true,
+  },
+  {
+    id: 'stu-8',
+    name: 'Meera Iyer',
+    rollNo: '21SITE028',
+    section: 'CSE-C',
+    subject: 'CS201 Data Structures',
+    avgScore: 44,
+    practicePct: 38,
+    status: 'At Risk',
+    atRisk: true,
+  },
+  {
+    id: 'stu-9',
+    name: 'Rohan Das',
+    rollNo: '21SITE053',
+    section: 'CSE-A',
+    subject: 'CS201 Data Structures',
+    avgScore: 38,
+    practicePct: 32,
+    status: 'At Risk',
+    atRisk: true,
+  },
+  {
+    id: 'stu-10',
+    name: 'Vihaan Patel',
+    rollNo: '21SITE072',
+    section: 'CSE-C',
+    subject: 'CS305 Operating Systems',
+    avgScore: 47,
+    practicePct: 42,
+    status: 'At Risk',
+    atRisk: true,
+  },
+  {
+    id: 'stu-11',
+    name: 'Ananya Bose',
+    rollNo: '21SITE081',
+    section: 'CSE-A',
+    subject: 'CS201 Data Structures',
+    avgScore: 42,
+    practicePct: 36,
+    status: 'At Risk',
+    atRisk: true,
+  },
+  {
+    id: 'stu-12',
+    name: 'Sara Khan',
+    rollNo: '21SITE099',
+    section: 'CSE-C',
+    subject: 'CS201 Data Structures',
+    avgScore: 46,
+    practicePct: 40,
+    status: 'At Risk',
+    atRisk: true,
+  },
+  {
+    id: 'stu-13',
+    name: 'Dev Patel',
+    rollNo: '21SITE115',
+    section: 'CSE-A',
+    subject: 'CS201 Data Structures',
+    avgScore: 48,
+    practicePct: 44,
+    status: 'At Risk',
+    atRisk: true,
+  },
+  {
+    id: 'stu-14',
+    name: 'Aisha Khan',
+    rollNo: '21SITE122',
+    section: 'CSE-C',
+    subject: 'CS201 Data Structures',
+    avgScore: 45,
+    practicePct: 41,
+    status: 'At Risk',
+    atRisk: true,
+  },
+  {
+    id: 'stu-15',
+    name: 'Vikram Malhotra',
+    rollNo: '21SITE130',
+    section: 'CSE-A',
+    subject: 'CS305 Operating Systems',
+    avgScore: 76,
+    practicePct: 82,
+    status: 'Good Standing',
+    atRisk: false,
+  },
+  {
+    id: 'stu-16',
+    name: 'Divya Chawla',
+    rollNo: '21SITE144',
+    section: 'CSE-C',
+    subject: 'CS201 Data Structures',
+    avgScore: 88,
+    practicePct: 91,
+    status: 'Good Standing',
+    atRisk: false,
+  },
 ]
 
 const FACULTY_ASSESSMENTS = [
@@ -367,7 +478,7 @@ const INITIAL_COHORTS: CohortItem[] = [
     id: 'c-remedial-2',
     name: 'Remedial for Data Structures',
     isCustom: true,
-    studentsCount: 7,
+    studentsCount: 2,
     actionsCount: 1,
     materialsCount: 1,
     description:
@@ -385,21 +496,146 @@ const INITIAL_COHORTS: CohortItem[] = [
       { id: 'mat-2-1', title: 'Pointers & Dynamic Allocation Guide', type: 'PDF' },
     ],
     students: [
-      { id: 'st-2-1', name: 'Dev Patel', score: 48, initials: 'DP' },
-      { id: 'st-2-2', name: 'Aisha Khan', score: 45, initials: 'AK' },
+      { id: 'st-13', name: 'Dev Patel', score: 48, initials: 'DP' },
+      { id: 'st-14', name: 'Aisha Khan', score: 45, initials: 'AK' },
+    ],
+  },
+  {
+    id: 'c-auto-1',
+    name: 'CS201 — Data Structures',
+    isCustom: false,
+    studentsCount: 80,
+    actionsCount: 3,
+    materialsCount: 3,
+    description:
+      'Core course cohort across Sections CSE-A and CSE-C for Data Structures and Algorithms syllabus.',
+    actions: [
+      {
+        id: 'act-auto-1-1',
+        title: 'Conduct Mid-Term exam review session',
+        subtext: 'Review past-year papers & complex pointer questions · due 20 Oct',
+        dueDate: '20 Oct',
+        status: 'In progress',
+      },
+      {
+        id: 'act-auto-1-2',
+        title: 'Host doubt clearing lab on BST Trees',
+        subtext: 'Recursion tracing and memory pointer debug · due 25 Oct',
+        dueDate: '25 Oct',
+        status: 'Planned',
+      },
+      {
+        id: 'act-auto-1-3',
+        title: 'Publish Assignment 2 solutions & rubrics',
+        subtext: 'Upload step-by-step code solution PDF to course library · due 12 Oct',
+        dueDate: '12 Oct',
+        status: 'Done',
+      },
+    ],
+    outcome:
+      'Assignment 2 review: 82% submission rate achieved with improved graph traversal scores.',
+    materials: [
+      { id: 'mat-auto-1-1', title: 'Unit 2: Trees & Heaps Lecture Notes', type: 'PDF' },
+      { id: 'mat-auto-1-2', title: 'Lab Code: Binary Tree Traversal', type: 'FOLDER' },
+      { id: 'mat-auto-1-3', title: 'Mid-Term Sample Questions Bank', type: 'PDF' },
+    ],
+    students: [
+      { id: 'stu-1', name: 'Aarav Sharma', score: 84, initials: 'AS' },
+      { id: 'stu-2', name: 'Sneha Reddy', score: 52, initials: 'SR' },
+      { id: 'stu-3', name: 'Kiran Kumar Varma', score: 78, initials: 'KV' },
+      { id: 'stu-4', name: 'Ananya Roy', score: 58, initials: 'AR' },
+      { id: 'stu-7', name: 'Kiran Reddy', score: 41, initials: 'KR' },
+      { id: 'stu-8', name: 'Meera Iyer', score: 44, initials: 'MI' },
+    ],
+  },
+  {
+    id: 'c-auto-2',
+    name: 'CS305 — Operating Systems',
+    isCustom: false,
+    studentsCount: 45,
+    actionsCount: 2,
+    materialsCount: 2,
+    description:
+      'Core course cohort for Section CSE-A taking Systems Programming, Concurrency & Kernel Architecture.',
+    actions: [
+      {
+        id: 'act-auto-2-1',
+        title: 'Semaphore deadlock trace workshop',
+        subtext: 'Live simulation of Producer-Consumer problem · due 22 Oct',
+        dueDate: '22 Oct',
+        status: 'In progress',
+      },
+      {
+        id: 'act-auto-2-2',
+        title: 'Evaluate Viva Voce audio submissions',
+        subtext: 'Grade process scheduling oral presentations · due 27 Oct',
+        dueDate: '27 Oct',
+        status: 'Planned',
+      },
+    ],
+    outcome:
+      'Viva Voce: Process scheduling understanding is solid; memory paging needs more lab practice.',
+    materials: [
+      { id: 'mat-auto-2-1', title: 'Concurrency & Deadlocks Slide Deck', type: 'PDF' },
+      { id: 'mat-auto-2-2', title: 'POSIX Pthreads Sample Implementations', type: 'FOLDER' },
+    ],
+    students: [
+      { id: 'stu-5', name: 'Rohan Gupta', score: 48, initials: 'RG' },
+      { id: 'stu-6', name: 'Pooja Venkatesh', score: 92, initials: 'PV' },
+      { id: 'stu-10', name: 'Vihaan Patel', score: 47, initials: 'VP' },
+      { id: 'stu-15', name: 'Vikram Malhotra', score: 76, initials: 'VM' },
+    ],
+  },
+  {
+    id: 'c-auto-3',
+    name: 'Section CSE-A',
+    isCustom: false,
+    studentsCount: 45,
+    actionsCount: 2,
+    materialsCount: 1,
+    description:
+      'B.Tech CSE Section A batch tracking attendance, continuous assessment, and faculty academic mentoring.',
+    actions: [
+      {
+        id: 'act-auto-3-1',
+        title: 'Monthly academic mentorship review',
+        subtext: 'One-on-one progress audit for low attendance students · due 19 Oct',
+        dueDate: '19 Oct',
+        status: 'Done',
+      },
+      {
+        id: 'act-auto-3-2',
+        title: 'Peer programming pairs setup',
+        subtext: 'Group high scorers with developing students for lab projects · due 28 Oct',
+        dueDate: '28 Oct',
+        status: 'Planned',
+      },
+    ],
+    outcome:
+      'Mentorship review: 5 students put on academic recovery watch; attendance improved by 14%.',
+    materials: [
+      { id: 'mat-auto-3-1', title: 'Section A Academic Timetable & Lab Rubrics', type: 'PDF' },
+    ],
+    students: [
+      { id: 'stu-1', name: 'Aarav Sharma', score: 84, initials: 'AS' },
+      { id: 'stu-2', name: 'Sneha Reddy', score: 52, initials: 'SR' },
+      { id: 'stu-5', name: 'Rohan Gupta', score: 48, initials: 'RG' },
+      { id: 'stu-6', name: 'Pooja Venkatesh', score: 92, initials: 'PV' },
     ],
   },
 ]
 
-const DEFAULT_AUTO_COHORTS = [
-  { id: 'c-auto-1', name: 'CS201 — Data Structures', studentsCount: 80 },
-  { id: 'c-auto-2', name: 'CS305 — Operating Systems', studentsCount: 45 },
-  { id: 'c-auto-3', name: 'Section CSE-A', studentsCount: 45 },
-]
-
-export function FacultyDashboard() {
-  const { state } = useLms()
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'students' | 'assessments' | 'cohorts' | 'library'>('dashboard')
+export function FacultyDashboard({
+  initialTab,
+}: {
+  initialTab?: 'dashboard' | 'students' | 'assessments' | 'cohorts' | 'library'
+} = {}) {
+  const { state, toast } = useLms()
+  const [searchParams] = useSearchParams()
+  const tabFromQuery = searchParams.get('tab') as 'dashboard' | 'students' | 'assessments' | 'cohorts' | 'library' | null
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'students' | 'assessments' | 'cohorts' | 'library'>(
+    initialTab || tabFromQuery || 'dashboard'
+  )
   const [selectedSubject, setSelectedSubject] = useState<SubjectFilter>('all')
   const [perfMode, setPerfMode] = useState<'combined' | 'compare'>('combined')
   const [sectionTableTab, setSectionTableTab] = useState<'sections' | 'topics'>('sections')
@@ -420,6 +656,12 @@ export function FacultyDashboard() {
   const [newMaterialModal, setNewMaterialModal] = useState(false)
   const [newMaterialTitle, setNewMaterialTitle] = useState('')
   const [newMaterialType, setNewMaterialType] = useState<'FOLDER' | 'PDF' | 'LINK'>('PDF')
+
+  // Add Students Modal State
+  const [addStudentsModal, setAddStudentsModal] = useState(false)
+  const [studentSearchQuery, setStudentSearchQuery] = useState('')
+  const [studentFilterAtRisk, setStudentFilterAtRisk] = useState(false)
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([])
 
   const selectedCohort = cohortsList.find((c) => c.id === selectedCohortId) || cohortsList[0]
 
@@ -444,12 +686,14 @@ export function FacultyDashboard() {
 
   const handleDeleteCohort = (cohortId: string) => {
     if (cohortsList.length <= 1) {
-      alert('At least one cohort must remain.')
+      toast('error', 'At least one cohort must remain.')
       return
     }
+    const target = cohortsList.find((c) => c.id === cohortId)
     const nextList = cohortsList.filter((c) => c.id !== cohortId)
     setCohortsList(nextList)
     setSelectedCohortId(nextList[0].id)
+    toast('info', `Cohort "${target?.name}" removed`)
   }
 
   const handleAddCohort = (e: React.FormEvent) => {
@@ -472,6 +716,7 @@ export function FacultyDashboard() {
     setNewCohortName('')
     setNewCohortDesc('')
     setNewCohortModal(false)
+    toast('success', `Cohort "${newC.name}" created`)
   }
 
   const handleAddAction = (e: React.FormEvent) => {
@@ -498,6 +743,7 @@ export function FacultyDashboard() {
     setNewActionSubtext('')
     setNewActionDue('')
     setNewActionModal(false)
+    toast('success', `Intervention action added to ${selectedCohort.name}`)
   }
 
   const handleAddMaterial = (e: React.FormEvent) => {
@@ -520,6 +766,73 @@ export function FacultyDashboard() {
     )
     setNewMaterialTitle('')
     setNewMaterialModal(false)
+    toast('success', `Material assigned to ${selectedCohort.name}`)
+  }
+
+  // Add Students Helpers
+  const candidateStudents = useMemo(() => {
+    if (!selectedCohort) return []
+    const existingNames = new Set(selectedCohort.students.map((s) => s.name.toLowerCase()))
+    return STUDENT_ROSTER.filter((s) => !existingNames.has(s.name.toLowerCase()))
+  }, [selectedCohort])
+
+  const filteredCandidates = useMemo(() => {
+    return candidateStudents.filter((s) => {
+      if (studentFilterAtRisk && !s.atRisk) return false
+      if (studentSearchQuery.trim()) {
+        const q = studentSearchQuery.toLowerCase()
+        return (
+          s.name.toLowerCase().includes(q) ||
+          s.rollNo.toLowerCase().includes(q) ||
+          s.section.toLowerCase().includes(q)
+        )
+      }
+      return true
+    })
+  }, [candidateStudents, studentFilterAtRisk, studentSearchQuery])
+
+  const toggleStudentSelection = (id: string) => {
+    setSelectedStudentIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    )
+  }
+
+  const handleOpenAddStudents = () => {
+    setStudentSearchQuery('')
+    setStudentFilterAtRisk(false)
+    setSelectedStudentIds([])
+    setAddStudentsModal(true)
+  }
+
+  const handleConfirmAddStudents = () => {
+    if (selectedStudentIds.length === 0 || !selectedCohort) return
+    const studentsToAdd: CohortStudent[] = candidateStudents
+      .filter((s) => selectedStudentIds.includes(s.id))
+      .map((s) => ({
+        id: s.id,
+        name: s.name,
+        score: s.avgScore,
+        initials: s.name
+          .split(' ')
+          .map((n) => n[0])
+          .join('')
+          .slice(0, 2)
+          .toUpperCase(),
+      }))
+
+    setCohortsList((prev) =>
+      prev.map((c) => {
+        if (c.id !== selectedCohort.id) return c
+        return {
+          ...c,
+          students: [...c.students, ...studentsToAdd],
+          studentsCount: c.students.length + studentsToAdd.length,
+        }
+      })
+    )
+    toast('success', `Added ${studentsToAdd.length} student${studentsToAdd.length > 1 ? 's' : ''} to ${selectedCohort.name}`)
+    setAddStudentsModal(false)
+    setSelectedStudentIds([])
   }
 
   const me = state.people.find((p) => p.id === state.currentUserId) || {
@@ -1476,35 +1789,35 @@ export function FacultyDashboard() {
                   YOUR COHORTS
                 </p>
                 <div className="space-y-2">
-                  {cohortsList.map((cohort) => {
-                    const isSelected = cohort.id === selectedCohort.id
-                    return (
-                      <button
-                        key={cohort.id}
-                        type="button"
-                        onClick={() => setSelectedCohortId(cohort.id)}
-                        className={`w-full rounded-2xl border p-3.5 text-left transition ${
-                          isSelected
-                            ? 'border-brand bg-white shadow-sm ring-1 ring-brand/30'
-                            : 'border-border bg-white hover:border-brand/40 hover:bg-secondary/30 shadow-2xs'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <h4 className="text-xs font-bold text-text-heading truncate">
-                            {cohort.name}
-                          </h4>
-                          {cohort.isCustom && (
+                  {cohortsList
+                    .filter((c) => c.isCustom)
+                    .map((cohort) => {
+                      const isSelected = cohort.id === selectedCohort.id
+                      return (
+                        <button
+                          key={cohort.id}
+                          type="button"
+                          onClick={() => setSelectedCohortId(cohort.id)}
+                          className={`w-full rounded-2xl border p-3.5 text-left transition ${
+                            isSelected
+                              ? 'border-brand bg-white shadow-sm ring-1 ring-brand/30'
+                              : 'border-border bg-white hover:border-brand/40 hover:bg-secondary/30 shadow-2xs'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <h4 className="text-xs font-bold text-text-heading truncate">
+                              {cohort.name}
+                            </h4>
                             <span className="shrink-0 rounded-full bg-indigo-50 border border-indigo-200 px-2 py-0.5 text-[9px] font-bold text-indigo-700 tracking-wider uppercase">
                               CUSTOM
                             </span>
-                          )}
-                        </div>
-                        <p className="mt-1.5 text-[11px] text-muted-foreground">
-                          {cohort.students.length} students · {cohort.actions.length} actions · {cohort.materials.length} materials
-                        </p>
-                      </button>
-                    )
-                  })}
+                          </div>
+                          <p className="mt-1.5 text-[11px] text-muted-foreground">
+                            {cohort.students.length} students · {cohort.actions.length} actions · {cohort.materials.length} materials
+                          </p>
+                        </button>
+                      )
+                    })}
                 </div>
               </div>
 
@@ -1513,19 +1826,40 @@ export function FacultyDashboard() {
                   DEFAULT · AUTO-GENERATED
                 </p>
                 <div className="space-y-2">
-                  {DEFAULT_AUTO_COHORTS.map((ac) => (
-                    <div
-                      key={ac.id}
-                      className="flex items-center justify-between rounded-xl border border-border bg-white px-3 py-2.5 text-left shadow-2xs"
-                    >
-                      <span className="text-xs font-medium text-text-heading truncate pr-2">
-                        {ac.name}
-                      </span>
-                      <span className="shrink-0 rounded-full bg-secondary px-2.5 py-0.5 text-[11px] font-bold text-muted-foreground border border-border">
-                        {ac.studentsCount}
-                      </span>
-                    </div>
-                  ))}
+                  {cohortsList
+                    .filter((c) => !c.isCustom)
+                    .map((ac) => {
+                      const isSelected = ac.id === selectedCohort.id
+                      return (
+                        <button
+                          key={ac.id}
+                          type="button"
+                          onClick={() => setSelectedCohortId(ac.id)}
+                          className={`w-full flex items-center justify-between rounded-xl border px-3 py-2.5 text-left transition ${
+                            isSelected
+                              ? 'border-brand bg-white shadow-sm ring-1 ring-brand/30'
+                              : 'border-border bg-white hover:border-brand/40 hover:bg-secondary/30 shadow-2xs'
+                          }`}
+                        >
+                          <span
+                            className={`text-xs truncate pr-2 ${
+                              isSelected ? 'font-bold text-brand' : 'font-medium text-text-heading'
+                            }`}
+                          >
+                            {ac.name}
+                          </span>
+                          <span
+                            className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-bold border ${
+                              isSelected
+                                ? 'bg-brand-soft text-brand border-brand/20'
+                                : 'bg-secondary text-muted-foreground border-border'
+                            }`}
+                          >
+                            {ac.studentsCount}
+                          </span>
+                        </button>
+                      )
+                    })}
                 </div>
               </div>
             </div>
@@ -1710,36 +2044,7 @@ export function FacultyDashboard() {
                   </h3>
                   <button
                     type="button"
-                    onClick={() => {
-                      const sampleName = prompt('Enter student name to add to cohort:')
-                      if (sampleName && sampleName.trim()) {
-                        const inits = sampleName
-                          .trim()
-                          .split(' ')
-                          .map((n) => n[0])
-                          .join('')
-                          .slice(0, 2)
-                          .toUpperCase()
-                        setCohortsList((prev) =>
-                          prev.map((c) =>
-                            c.id === selectedCohort.id
-                              ? {
-                                  ...c,
-                                  students: [
-                                    ...c.students,
-                                    {
-                                      id: `st-${Date.now()}`,
-                                      name: sampleName.trim(),
-                                      score: Math.floor(Math.random() * 20) + 35,
-                                      initials: inits || 'ST',
-                                    },
-                                  ],
-                                }
-                              : c
-                          )
-                        )
-                      }
-                    }}
+                    onClick={handleOpenAddStudents}
                     className="rounded-full border border-border bg-white px-2.5 py-0.5 text-[11px] font-semibold text-muted-foreground hover:bg-secondary hover:text-text-heading transition shadow-2xs"
                   >
                     Add students
@@ -1960,6 +2265,114 @@ export function FacultyDashboard() {
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* Modal: Add Students to Cohort */}
+      <Modal
+        open={addStudentsModal}
+        title={`Add Students to ${selectedCohort?.name || 'Cohort'}`}
+        onClose={() => setAddStudentsModal(false)}
+      >
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="relative flex-1">
+              <Search size={14} className="absolute left-3 top-2.5 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search students by name, roll no, or section..."
+                value={studentSearchQuery}
+                onChange={(e) => setStudentSearchQuery(e.target.value)}
+                className="w-full rounded-xl border border-border bg-white pl-8 pr-3 py-1.5 text-xs text-foreground focus:border-brand focus:outline-none"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => setStudentFilterAtRisk((prev) => !prev)}
+              className={`shrink-0 rounded-full border px-3 py-1 text-[11px] font-bold transition ${
+                studentFilterAtRisk
+                  ? 'border-rose-300 bg-rose-50 text-rose-700'
+                  : 'border-border bg-white text-muted-foreground hover:bg-secondary'
+              }`}
+            >
+              {studentFilterAtRisk ? 'Showing At-Risk (<60%)' : 'Filter At-Risk'}
+            </button>
+          </div>
+
+          <div className="max-h-64 overflow-y-auto space-y-1.5 pr-1 border border-border rounded-xl p-2 bg-secondary/20">
+            {filteredCandidates.map((st) => {
+              const isSelected = selectedStudentIds.includes(st.id)
+              return (
+                <div
+                  key={st.id}
+                  onClick={() => toggleStudentSelection(st.id)}
+                  className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition border ${
+                    isSelected
+                      ? 'border-brand bg-brand-soft/70 shadow-2xs'
+                      : 'border-transparent hover:bg-white hover:border-border'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div
+                      className={`h-4 w-4 rounded flex items-center justify-center border text-white transition ${
+                        isSelected ? 'bg-brand border-brand' : 'border-border bg-white'
+                      }`}
+                    >
+                      {isSelected && <Check size={12} />}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-text-heading">{st.name}</span>
+                        <span className="text-[10px] text-muted-foreground">({st.rollNo})</span>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground">
+                        {st.section} · {st.subject}
+                      </p>
+                    </div>
+                  </div>
+
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-[10px] font-bold border ${
+                      st.avgScore < 60
+                        ? 'border-rose-200 bg-rose-50 text-rose-600'
+                        : 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                    }`}
+                  >
+                    {st.avgScore}%
+                  </span>
+                </div>
+              )
+            })}
+
+            {filteredCandidates.length === 0 && (
+              <p className="text-center py-6 text-xs text-muted-foreground">
+                No students available to add matching current search.
+              </p>
+            )}
+          </div>
+
+          <div className="flex items-center justify-between pt-2 border-t border-border">
+            <span className="text-xs text-muted-foreground font-medium">
+              {selectedStudentIds.length} student{selectedStudentIds.length === 1 ? '' : 's'} selected
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setAddStudentsModal(false)}
+                className="rounded-xl border border-border px-3.5 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-secondary"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={selectedStudentIds.length === 0}
+                onClick={handleConfirmAddStudents}
+                className="rounded-xl bg-brand px-4 py-1.5 text-xs font-bold text-white hover:bg-brand-dark disabled:opacity-50 disabled:pointer-events-none shadow-xs transition"
+              >
+                Add to Cohort
+              </button>
+            </div>
+          </div>
+        </div>
       </Modal>
     </div>
   )

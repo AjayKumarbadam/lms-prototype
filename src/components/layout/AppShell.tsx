@@ -8,6 +8,7 @@ import {
   ClipboardList,
   GraduationCap,
   HelpCircle,
+  Layers,
   LayoutDashboard,
   Library,
   LogOut,
@@ -83,6 +84,7 @@ export function AppShell() {
     if (state.role === 'faculty') {
       return [
         { to: '/lms/dashboard', label: 'Faculty Dashboard', icon: LayoutDashboard },
+        { to: '/lms/cohorts', label: 'Cohort Action Plan', icon: Layers },
         { to: '/lms/courses', label: 'Course Offerings', icon: BookOpen },
         { to: '/lms/content', label: 'Course Materials', icon: Library },
         { to: '/lms/assignments', label: 'Assessments Studio', icon: ClipboardList },
@@ -189,12 +191,16 @@ export function AppShell() {
   const searchHits = useMemo(() => {
     if (q.trim().length < 2) return []
     const s = q.toLowerCase()
-    return [
+    const hits = [
       ...state.courses.filter((c) => c.title.toLowerCase().includes(s) || c.code.toLowerCase().includes(s)).map((c) => ({ to: `/lms/courses/${c.id}`, label: `${c.code} · ${c.title}` })),
       ...state.assignments.filter((a) => a.title.toLowerCase().includes(s)).map((a) => ({ to: `/lms/assignments/${a.id}`, label: a.title })),
       ...state.materials.filter((m) => m.title.toLowerCase().includes(s)).map((m) => ({ to: `/lms/content/${m.id}`, label: m.title })),
-    ].slice(0, 8)
-  }, [q, state.assignments, state.courses, state.materials])
+    ]
+    if (state.role === 'faculty' && ('cohort'.includes(s) || 'action plan'.includes(s) || 'remedial'.includes(s))) {
+      hits.unshift({ to: '/lms/cohorts', label: 'Cohort Action Plan & Interventions' })
+    }
+    return hits.slice(0, 8)
+  }, [q, state.assignments, state.courses, state.materials, state.role])
 
   const currentRoleConfig = ROLE_OPTIONS.find((r) => r.id === state.role) || ROLE_OPTIONS[0]
 
