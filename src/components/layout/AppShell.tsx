@@ -93,7 +93,8 @@ export function AppShell() {
       ]
     }
     return [
-      { to: '/lms/dashboard', label: 'Institutional Overview', icon: LayoutDashboard },
+      { to: '/lms/dashboard', label: 'Admin Dashboard', icon: LayoutDashboard },
+      { to: '/lms/courses/c-dbms/structure', label: 'Course Builder', icon: Layers },
       { to: '/lms/courses', label: 'Course Directory', icon: BookOpen },
       { to: '/lms/content', label: 'Content Repository', icon: Library },
       { to: '/lms/assignments', label: 'Examination Management', icon: ClipboardList },
@@ -198,6 +199,9 @@ export function AppShell() {
     ]
     if (state.role === 'faculty' && ('cohort'.includes(s) || 'action plan'.includes(s) || 'remedial'.includes(s))) {
       hits.unshift({ to: '/lms/cohorts', label: 'Cohort Action Plan & Interventions' })
+    }
+    if (state.role === 'administrator' && ('builder'.includes(s) || 'course builder'.includes(s) || 'editor'.includes(s) || 'learnhouse'.includes(s))) {
+      hits.unshift({ to: '/lms/courses/c-dbms/structure', label: 'Course Builder (LearnHouse editor)' })
     }
     return hits.slice(0, 8)
   }, [q, state.assignments, state.courses, state.materials, state.role])

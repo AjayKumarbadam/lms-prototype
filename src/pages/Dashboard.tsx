@@ -5,11 +5,11 @@ import {
   LayoutGrid,
   ClipboardCheck,
   Target,
-  UserCheck,
 } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useLms } from '../store/LmsStore'
 import { FacultyDashboard } from './faculty/FacultyDashboard'
+import { AdminDashboard } from './admin/AdminDashboard'
 
 /**
  * ==========================================================================================
@@ -180,7 +180,6 @@ function DualRingGauge({
 
 export function Dashboard() {
   const { state } = useLms()
-  const [adminView, setAdminView] = useState<'faculty' | 'student'>('faculty')
   const [insightTab, setInsightTab] = useState<'subjects' | 'communication'>('subjects')
   const [hoveredScatter, setHoveredScatter] = useState<SubjectItem | null>(null)
 
@@ -189,40 +188,9 @@ export function Dashboard() {
     return <FacultyDashboard />
   }
 
-  // 2. Administrator can toggle between Faculty Portal and Student View
+  // 2. Direct Admin Dashboard for Administrator Role
   if (state.role === 'administrator') {
-    return (
-      <div className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand/20 bg-brand-soft/70 px-4 py-2.5 text-xs text-brand shadow-2xs">
-          <div className="flex items-center gap-2">
-            <UserCheck size={16} className="text-brand" />
-            <span>
-              Signed in as <strong>Administrator</strong>. Select dashboard perspective:
-            </span>
-          </div>
-          <div className="flex items-center gap-1 rounded-full border border-border bg-white p-1">
-            <button
-              onClick={() => setAdminView('faculty')}
-              className={`rounded-full px-3 py-1 font-bold transition ${
-                adminView === 'faculty' ? 'bg-brand text-white shadow-xs' : 'text-muted-foreground hover:text-text-heading'
-              }`}
-            >
-              Faculty Dashboard
-            </button>
-            <button
-              onClick={() => setAdminView('student')}
-              className={`rounded-full px-3 py-1 font-bold transition ${
-                adminView === 'student' ? 'bg-brand text-white shadow-xs' : 'text-muted-foreground hover:text-text-heading'
-              }`}
-            >
-              Student Academic View
-            </button>
-          </div>
-        </div>
-
-        {adminView === 'faculty' ? <FacultyDashboard /> : renderStudentDashboard()}
-      </div>
-    )
+    return <AdminDashboard />
   }
 
   return renderStudentDashboard()
@@ -253,8 +221,8 @@ export function Dashboard() {
       {/* 2. "My Subjects" Section */}
       <section className="space-y-3.5">
         <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-          <h2 className="text-xl font-bold tracking-tight text-slate-900">My Subjects</h2>
-          <p className="text-xs font-medium text-slate-500">
+          <h2 className="text-xl font-bold tracking-tight text-text-heading">My Subjects</h2>
+          <p className="text-xs font-medium text-muted-foreground">
             6 subjects this semester · Outer ring — score, inner ring — completion
           </p>
         </div>
@@ -522,7 +490,7 @@ export function Dashboard() {
             </div>
 
             {/* 4-Quadrant Visual Scatter Matrix */}
-            <div className="relative mt-4 h-52 w-full overflow-hidden rounded-xl border border-slate-200/80 bg-white">
+            <div className="relative mt-4 h-52 w-full overflow-hidden rounded-xl border border-border bg-white">
               {/* 4 Quadrants Background Grid */}
               <div className="grid h-full w-full grid-cols-2 grid-rows-2">
                 {/* Top-Left Quadrant */}
@@ -555,8 +523,8 @@ export function Dashboard() {
               </div>
 
               {/* Dividing Grid Axes Lines */}
-              <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 border-t border-dashed border-slate-300" />
-              <div className="pointer-events-none absolute inset-y-0 left-1/2 -translate-x-1/2 border-l border-dashed border-slate-300" />
+              <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 border-t border-dashed border-border" />
+              <div className="pointer-events-none absolute inset-y-0 left-1/2 -translate-x-1/2 border-l border-dashed border-border" />
 
               {/* Scatter Points Plotted Accurately:
                   X = Syllabus Completion % (0% to 100%)
@@ -588,7 +556,7 @@ export function Dashboard() {
                       className={`h-3.5 w-3.5 rounded-full ${colorDotMap[sub.colorTone]} ring-4 shadow-sm transition`}
                     />
                     {/* Tooltip on hover */}
-                    <div className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-1.5 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-[10px] font-medium text-white shadow-lg group-hover:block">
+                    <div className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-1.5 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-brand-dark px-2 py-1 text-[10px] font-medium text-white shadow-lg group-hover:block">
                       {sub.code}: {sub.title} ({sub.scorePct}%)
                     </div>
                   </div>
@@ -597,7 +565,7 @@ export function Dashboard() {
             </div>
 
             {/* X-Axis Footer */}
-            <div className="mt-2 flex items-center justify-between px-1 text-[11px] font-medium text-slate-400">
+            <div className="mt-2 flex items-center justify-between px-1 text-[11px] font-medium text-muted-foreground">
               <span>0% complete</span>
               <span>Syllabus completion →</span>
               <span>100%</span>
