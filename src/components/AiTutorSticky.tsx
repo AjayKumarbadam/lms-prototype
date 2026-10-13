@@ -102,21 +102,36 @@ export function AiTutorSticky() {
 
   return (
     <>
-      {/* Persistent Sticky Floating Button */}
+      {/* Persistent Sticky Floating Button - Circular Shape Ball */}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
         <motion.button
           onClick={() => setOpen((prev) => !prev)}
-          whileHover={{ scale: 1.05, y: -2 }}
-          whileTap={{ scale: 0.95 }}
-          className="group flex items-center gap-2.5 rounded-full bg-gradient-to-r from-[#4A0B1C] via-[#6B1029] to-[#801432] px-5 py-3 text-sm font-semibold text-white shadow-xl shadow-[#4A0B1C]/35 ring-2 ring-white/30 backdrop-blur-sm transition-all hover:shadow-2xl hover:shadow-[#6B1029]/50"
+          whileHover={{ scale: 1.1, rotate: 3 }}
+          whileTap={{ scale: 0.92 }}
+          className="group relative flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-tr from-[#4A0B1C] via-[#6B1029] to-[#801432] text-white shadow-xl shadow-[#4A0B1C]/45 ring-4 ring-white/30 border border-brand-gold/60 backdrop-blur-sm transition-all hover:shadow-2xl hover:shadow-[#6B1029]/60"
           aria-label="Ask AI Tutor"
+          title="Ask AI Academic Tutor"
         >
-          <div className="relative flex h-6 w-6 items-center justify-center rounded-full bg-white/20">
-            <Bot size={16} className="text-white animate-pulse" />
-            <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-400 ring-2 ring-[#4A0B1C]" />
+          {/* Subtle Outer Ping Glow */}
+          <span className="absolute inset-0 rounded-full bg-brand-gold/20 animate-ping opacity-60 pointer-events-none" />
+
+          {/* Bot Icon & Sparkle inside the Ball */}
+          <div className="relative flex items-center justify-center">
+            {open ? (
+              <X size={22} className="text-white transition-transform group-hover:rotate-90" />
+            ) : (
+              <>
+                <Bot size={24} className="text-white drop-shadow-sm transition-transform group-hover:scale-110" />
+                <Sparkles
+                  size={13}
+                  className="absolute -top-2.5 -right-2 text-[#C9A227] animate-pulse"
+                />
+              </>
+            )}
           </div>
-          <span className="tracking-wide">Ask AI Tutor</span>
-          <Sparkles size={14} className="text-[#C9A227] opacity-90 transition-transform group-hover:rotate-12" />
+
+          {/* Live Online Status Indicator */}
+          <span className="absolute top-1 left-1 h-3 w-3 rounded-full bg-emerald-400 ring-2 ring-[#4A0B1C] shadow-xs" />
         </motion.button>
       </div>
 

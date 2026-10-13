@@ -124,8 +124,8 @@ export function AppShell() {
           menu ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
-        {/* SASI LMS Brand Header in Single White Color with Border - Height matches Main Navbar (h-[72px]) */}
-        <div className="flex h-[72px] shrink-0 items-center justify-between border-b border-border bg-white px-4">
+        {/* SASI LMS Brand Header in Single White Color without separation line */}
+        <div className="flex h-[72px] shrink-0 items-center justify-between bg-white px-4">
           <div className="flex items-center gap-3">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand text-base font-extrabold text-white shadow-sm ring-2 ring-brand-gold">
               S
@@ -212,14 +212,14 @@ export function AppShell() {
             <Menu size={20} />
           </button>
 
-          {/* Search Bar - Starts the Main Dashboard */}
-          <div className="relative flex-1 max-w-lg">
+          {/* Search Bar - Sized to span from the start to the role field */}
+          <div className="relative flex-1 min-w-0">
             <Search className="absolute left-3.5 top-2.5 text-brand" size={16} />
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search courses, materials, assignments..."
-              className="w-full rounded-xl border border-white/20 bg-white py-2 pl-9 pr-8 text-xs text-foreground placeholder:text-muted-foreground shadow-sm transition focus:outline-none focus:ring-2 focus:ring-brand-gold sm:text-sm"
+              className="w-full rounded-xl border border-white/20 bg-white/95 py-2 pl-9 pr-8 text-xs text-foreground placeholder:text-muted-foreground shadow-sm transition focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-gold sm:text-sm"
             />
             {q && (
               <button
@@ -249,43 +249,49 @@ export function AppShell() {
             )}
           </div>
 
-          {/* Right Header Controls: Notifications, Help, Role Selector (Account removed from here) */}
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            <button
-              className="relative rounded-lg p-2 text-white hover:bg-white/10 transition"
-              onClick={() => setNotes(true)}
-              aria-label="Notifications"
-            >
-              <Bell size={18} />
-              {unread > 0 && (
-                <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-amber-300 ring-2 ring-brand-dark" />
-              )}
-            </button>
-
-            <button
-              className="rounded-lg p-2 text-white hover:bg-white/10 transition"
-              onClick={() => setHelp(true)}
-              aria-label="Help"
-            >
-              <HelpCircle size={18} />
-            </button>
-
-            {/* Role Switcher Dropdown */}
-            <div className="hidden items-center gap-1.5 sm:flex">
-              <span className="text-xs text-rose-100">Role:</span>
+          {/* Right Header Controls: Role Selector FIRST, then Bell, then ? AT LAST */}
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+            {/* 1. Good looking Role field FIRST */}
+            <div className="flex items-center rounded-xl border border-white/25 bg-white/10 px-3 py-1.5 backdrop-blur-md transition hover:bg-white/15 focus-within:ring-2 focus-within:ring-brand-gold shadow-xs">
+              <span className="text-[10px] font-extrabold tracking-wider text-amber-300 uppercase select-none mr-2">
+                Role:
+              </span>
               <select
-                className="rounded-lg border border-white/20 bg-white px-2.5 py-1 text-xs font-semibold text-brand shadow-xs transition focus:outline-none"
+                className="bg-transparent text-xs font-bold text-white transition focus:outline-none cursor-pointer pr-1"
                 value={state.role}
                 onChange={(e) => {
                   dispatch({ type: 'SET_ROLE', role: e.target.value as Role })
                   toast('info', `Now viewing as ${e.target.value}`)
                 }}
               >
-                <option value="administrator">Administrator</option>
-                <option value="faculty">Faculty</option>
-                <option value="student">Student</option>
+                <option value="administrator" className="text-foreground bg-white">Administrator</option>
+                <option value="faculty" className="text-foreground bg-white">Faculty</option>
+                <option value="student" className="text-foreground bg-white">Student</option>
               </select>
             </div>
+
+            {/* 2. Notifications Bell */}
+            <button
+              className="relative rounded-xl border border-white/15 bg-white/10 p-2 text-white hover:bg-white/20 transition shadow-xs"
+              onClick={() => setNotes(true)}
+              aria-label="Notifications"
+              title="Notifications"
+            >
+              <Bell size={18} />
+              {unread > 0 && (
+                <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-amber-300 ring-2 ring-brand-dark animate-pulse" />
+              )}
+            </button>
+
+            {/* 3. ? (Help) AT LAST */}
+            <button
+              className="rounded-xl border border-white/15 bg-white/10 p-2 text-white hover:bg-white/20 transition shadow-xs"
+              onClick={() => setHelp(true)}
+              aria-label="Help"
+              title="Help & Demo info"
+            >
+              <HelpCircle size={18} />
+            </button>
           </div>
         </header>
 
