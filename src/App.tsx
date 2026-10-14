@@ -53,7 +53,10 @@ export default function App() {
           <Route path="/" element={<Navigate to="/lms/dashboard" replace />} />
           <Route path="/lms" element={<AppShell />}>
             <Route path="dashboard" element={<Dashboard />} />
+            <Route path="students" element={<FacultyDashboard initialTab="students" />} />
+            <Route path="faculty-assessments" element={<FacultyDashboard initialTab="assessments" />} />
             <Route path="cohorts" element={<FacultyDashboard initialTab="cohorts" />} />
+            <Route path="library" element={<FacultyDashboard initialTab="library" />} />
             <Route path="courses" element={<CourseList />} />
             <Route path="courses/new" element={<CourseForm mode="create" />} />
             <Route path="courses/import" element={<ImportExport />} />

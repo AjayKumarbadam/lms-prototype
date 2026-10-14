@@ -84,11 +84,11 @@ export function AppShell() {
     if (state.role === 'faculty') {
       return [
         { to: '/lms/dashboard', label: 'Faculty Dashboard', icon: LayoutDashboard },
-        { to: '/lms/cohorts', label: 'Cohort Action Plan', icon: Layers },
+        { to: '/lms/students', label: 'Student Details', icon: GraduationCap },
+        { to: '/lms/faculty-assessments', label: 'Assessments', icon: ClipboardList },
+        { to: '/lms/cohorts', label: 'Cohorts Action Plan', icon: Layers },
+        { to: '/lms/library', label: 'Course Library', icon: Library },
         { to: '/lms/courses', label: 'Course Offerings', icon: BookOpen },
-        { to: '/lms/content', label: 'Course Materials', icon: Library },
-        { to: '/lms/assignments', label: 'Assessments Studio', icon: ClipboardList },
-        { to: '/lms/gradebook', label: 'Gradebook & Cohorts', icon: GraduationCap },
         { to: '/lms/settings', label: 'Settings', icon: Settings },
       ]
     }
@@ -197,8 +197,19 @@ export function AppShell() {
       ...state.assignments.filter((a) => a.title.toLowerCase().includes(s)).map((a) => ({ to: `/lms/assignments/${a.id}`, label: a.title })),
       ...state.materials.filter((m) => m.title.toLowerCase().includes(s)).map((m) => ({ to: `/lms/content/${m.id}`, label: m.title })),
     ]
-    if (state.role === 'faculty' && ('cohort'.includes(s) || 'action plan'.includes(s) || 'remedial'.includes(s))) {
-      hits.unshift({ to: '/lms/cohorts', label: 'Cohort Action Plan & Interventions' })
+    if (state.role === 'faculty') {
+      if ('student'.includes(s) || 'roster'.includes(s) || 'detail'.includes(s)) {
+        hits.unshift({ to: '/lms/students', label: 'Student Details & Academic Standing' })
+      }
+      if ('assessment'.includes(s) || 'evaluat'.includes(s) || 'grading'.includes(s)) {
+        hits.unshift({ to: '/lms/faculty-assessments', label: 'Faculty Assessments & Evaluations' })
+      }
+      if ('cohort'.includes(s) || 'action plan'.includes(s) || 'remedial'.includes(s)) {
+        hits.unshift({ to: '/lms/cohorts', label: 'Cohort Action Plan & Interventions' })
+      }
+      if ('library'.includes(s) || 'material'.includes(s) || 'slide'.includes(s)) {
+        hits.unshift({ to: '/lms/library', label: 'Course Library & Learning Materials' })
+      }
     }
     if (state.role === 'administrator' && ('builder'.includes(s) || 'course builder'.includes(s) || 'editor'.includes(s) || 'learnhouse'.includes(s))) {
       hits.unshift({ to: '/lms/courses/c-dbms/structure', label: 'Course Builder (LearnHouse editor)' })

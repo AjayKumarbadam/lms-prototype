@@ -1,8 +1,7 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
   BookOpen,
-  GraduationCap,
   FileCheck,
   AlertCircle,
   ChevronDown,
@@ -636,6 +635,11 @@ export function FacultyDashboard({
   const [activeTab, setActiveTab] = useState<'dashboard' | 'students' | 'assessments' | 'cohorts' | 'library'>(
     initialTab || tabFromQuery || 'dashboard'
   )
+
+  useEffect(() => {
+    const target = initialTab || tabFromQuery || 'dashboard'
+    setActiveTab(target)
+  }, [initialTab, tabFromQuery])
   const [selectedSubject, setSelectedSubject] = useState<SubjectFilter>('all')
   const [perfMode, setPerfMode] = useState<'combined' | 'compare'>('combined')
   const [sectionTableTab, setSectionTableTab] = useState<'sections' | 'topics'>('sections')
@@ -893,76 +897,6 @@ export function FacultyDashboard({
 
   return (
     <div className="space-y-6 pb-12">
-      {/* 1. Top Sub-Navigation Bar & Academic Context */}
-      <div className="rounded-2xl border border-border bg-white p-4 shadow-2xs">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          {/* Left: Academic Portal Branding */}
-          <div className="flex items-center gap-3">
-            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand text-white shadow-sm ring-2 ring-brand-gold/50">
-              <GraduationCap size={22} className="text-white" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-text-heading">Academic Admin</h2>
-                <span className="rounded-full bg-brand-soft px-2 py-0.5 text-[10px] font-extrabold tracking-wider text-brand uppercase border border-border">
-                  Faculty
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground">SASI Institute of Technology & Engineering</p>
-            </div>
-          </div>
-
-          {/* Right: Context Metadata Pills */}
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary/80 px-3 py-1 text-xs font-semibold text-brand">
-              <span className="h-2 w-2 rounded-full bg-brand animate-pulse" />
-              Viewing as Faculty
-            </span>
-
-            <span className="inline-flex items-center rounded-full border border-border bg-white px-3 py-1 text-xs font-medium text-muted-foreground shadow-2xs">
-              1 campus · 1 active term
-            </span>
-
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3.5 py-1 text-xs font-bold text-text-heading shadow-2xs">
-              <span>{me.name}</span>
-              <ChevronDown size={14} className="text-muted-foreground" />
-            </div>
-          </div>
-        </div>
-
-        {/* Sub-Navbar Tabs */}
-        <div className="mt-4 flex items-center gap-1 overflow-x-auto border-t border-border pt-3">
-          {[
-            { id: 'dashboard', label: 'Dashboard' },
-            { id: 'students', label: 'Student details' },
-            { id: 'assessments', label: 'Assessments' },
-            { id: 'cohorts', label: 'Cohorts' },
-            { id: 'library', label: 'Library' },
-          ].map((tab) => {
-            const isActive = activeTab === tab.id
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`relative px-4 py-2 text-xs font-bold transition whitespace-nowrap rounded-lg ${
-                  isActive
-                    ? 'text-brand bg-brand-soft/60'
-                    : 'text-muted-foreground hover:text-text-heading hover:bg-secondary/60'
-                }`}
-              >
-                {tab.label}
-                {isActive && (
-                  <motion.div
-                    layoutId="activeSubNavTab"
-                    className="absolute bottom-0 left-2 right-2 h-0.5 bg-brand rounded-full"
-                  />
-                )}
-              </button>
-            )
-          })}
-        </div>
-      </div>
 
       {/* RENDER CONTENT BASED ON ACTIVE SUB-TAB */}
       {activeTab === 'dashboard' && (
