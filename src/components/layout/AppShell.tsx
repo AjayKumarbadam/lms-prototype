@@ -233,12 +233,12 @@ export function AppShell() {
 
       {/* 2. Side Dashboard (Sidebar) - Desktop Sticky & Mobile Drawer (Single White Theme) */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex h-screen w-72 shrink-0 flex-col border-r border-border bg-white shadow-sm transition-transform duration-200 lg:sticky lg:top-0 lg:z-30 lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex h-screen w-72 shrink-0 flex-col bg-white shadow-sm transition-transform duration-200 lg:sticky lg:top-0 lg:z-30 lg:translate-x-0 ${
           menu ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
-        {/* SASI LMS Brand Header in Single Solid Brand Burgundy Color matching main navbar */}
-        <div className="flex h-[72px] shrink-0 items-center justify-between bg-[#6B1029] text-white px-4">
+        {/* SASI LMS Brand Header in Single Solid Brand Burgundy Color matching main navbar with no separating line */}
+        <div className="flex h-[72px] shrink-0 items-center justify-between bg-[#6B1029] text-white px-4 shadow-md border-r-0">
           <div className="flex items-center gap-3">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-base font-extrabold text-brand shadow-sm ring-2 ring-brand-gold">
               S
@@ -260,7 +260,7 @@ export function AppShell() {
         </div>
 
         {/* Sidebar Nav Links */}
-        <nav className="flex-1 space-y-1 overflow-y-auto bg-white px-3 py-4">
+        <nav className="flex-1 space-y-1 overflow-y-auto bg-white px-3 py-4 border-r border-border">
           {nav.map((item) => (
             <NavLink
               key={item.to}
@@ -281,7 +281,7 @@ export function AppShell() {
         </nav>
 
         {/* Sidebar Footer User Info & Logout Button */}
-        <div className="border-t border-border bg-white p-3 flex items-center gap-2">
+        <div className="border-t border-r border-border bg-white p-3 flex items-center gap-2">
           <button
             type="button"
             onClick={openProfileModal}
