@@ -70,14 +70,22 @@ export function StatCard({
   value,
   hint,
   icon,
+  onClick,
+  className = '',
 }: {
   label: string
   value: string | number
   hint?: string
   icon?: ReactNode
+  onClick?: () => void
+  className?: string
 }) {
   return (
-    <motion.div whileHover={{ y: -2 }} className="card-hover rounded-xl border border-border bg-card p-4 shadow-2xs">
+    <motion.div
+      whileHover={{ y: -2 }}
+      onClick={onClick}
+      className={`card-hover rounded-xl border border-border bg-card p-4 shadow-2xs ${onClick ? 'cursor-pointer transition hover:border-brand/50 select-none' : ''} ${className}`}
+    >
       <div className="flex items-start justify-between">
         <p className="text-sm font-medium text-muted-foreground">{label}</p>
         {icon ? <div className="text-brand-gold">{icon}</div> : null}

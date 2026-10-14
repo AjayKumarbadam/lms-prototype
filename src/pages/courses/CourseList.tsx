@@ -75,15 +75,129 @@ export function CourseList() {
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        <StatCard label="Total courses" value={activeCourses.length} icon={<BookOpen size={18} className="text-brand-gold" />} />
-        <StatCard label="Published" value={activeCourses.filter((c) => c.status === 'published').length} />
-        <StatCard label="Draft" value={activeCourses.filter((c) => c.status === 'draft').length} />
-        <StatCard label="Archived" value={activeCourses.filter((c) => c.status === 'archived').length} />
+        <StatCard
+          label="Total courses"
+          value={activeCourses.length}
+          icon={<BookOpen size={18} className="text-brand-gold" />}
+          onClick={() => setStatus('all')}
+          className={status === 'all' ? 'ring-2 ring-brand border-brand/50 bg-brand-soft/20' : ''}
+        />
+        <StatCard
+          label="Published"
+          value={activeCourses.filter((c) => c.status === 'published').length}
+          onClick={() => setStatus('published')}
+          className={status === 'published' ? 'ring-2 ring-brand border-brand/50 bg-brand-soft/20' : ''}
+        />
+        <StatCard
+          label="Draft"
+          value={activeCourses.filter((c) => c.status === 'draft').length}
+          onClick={() => setStatus('draft')}
+          className={status === 'draft' ? 'ring-2 ring-brand border-brand/50 bg-brand-soft/20' : ''}
+        />
+        <StatCard
+          label="Archived"
+          value={activeCourses.filter((c) => c.status === 'archived').length}
+          onClick={() => setStatus('archived')}
+          className={status === 'archived' ? 'ring-2 ring-brand border-brand/50 bg-brand-soft/20' : ''}
+        />
         <StatCard label="Enrolled students" value={enrolled} />
-        <StatCard label="Soft Deleted" value={softDeletedCount} />
+        <StatCard
+          label="Soft Deleted"
+          value={softDeletedCount}
+          icon={<Trash2 size={18} className={softDeletedCount > 0 ? 'text-rose-500' : 'text-muted-foreground'} />}
+          onClick={() => setStatus('soft-deleted')}
+          className={
+            status === 'soft-deleted'
+              ? 'ring-2 ring-rose-500 border-rose-400 bg-rose-50/70 shadow-xs'
+              : softDeletedCount > 0
+              ? 'border-rose-200/80 bg-rose-50/30 hover:border-rose-300'
+              : ''
+          }
+        />
       </div>
 
       <Card className="border-border bg-card">
+        {/* Quick status tabs including direct Soft Deleted tab */}
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-border/70 pb-3">
+          <div className="flex flex-wrap items-center gap-1.5">
+            {[
+              { id: 'all', label: 'All Courses', count: activeCourses.length },
+              { id: 'published', label: 'Published', count: activeCourses.filter((c) => c.status === 'published').length },
+              { id: 'draft', label: 'Draft', count: activeCourses.filter((c) => c.status === 'draft').length },
+              { id: 'archived', label: 'Archived', count: activeCourses.filter((c) => c.status === 'archived').length },
+              { id: 'soft-deleted', label: 'Soft Deleted', count: softDeletedCount, isTrash: true },
+            ].map((tab) => {
+              const isActive = status === tab.id
+              const isTrash = tab.isTrash
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setStatus(tab.id)}
+                  className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition cursor-pointer ${
+                    isActive
+                      ? isTrash
+                        ? 'bg-rose-600 text-white shadow-xs ring-1 ring-rose-600'
+                        : 'bg-brand text-white shadow-xs ring-1 ring-brand'
+                      : isTrash && tab.count > 0
+                      ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-300/80'
+                      : 'bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground border border-border/70'
+                  }`}
+                >
+                  {isTrash && <Trash2 size={13} className={isActive ? 'text-white' : 'text-rose-500'} />}
+                  <span>{tab.label}</span>
+                  <span
+                    className={`rounded-full px-1.5 py-0.2 text-[10px] font-bold ${
+                      isActive
+                        ? 'bg-white/20 text-white'
+                        : isTrash && tab.count > 0
+                        ? 'bg-rose-200 text-rose-900'
+                        : 'bg-border/60 text-muted-foreground'
+                    }`}
+                  >
+                    {tab.count}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+
+          {softDeletedCount > 0 && status !== 'soft-deleted' && (
+            <button
+              type="button"
+              onClick={() => setStatus('soft-deleted')}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-600 hover:text-rose-800 hover:underline cursor-pointer"
+            >
+              <Trash2 size={13} />
+              <span>{softDeletedCount} soft-deleted course{softDeletedCount > 1 ? 's' : ''} available to restore →</span>
+            </button>
+          )}
+        </div>
+
+        {/* Informational banner when viewing soft-deleted courses */}
+        {status === 'soft-deleted' && (
+          <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-xl border border-rose-200 bg-rose-50/90 p-3.5 text-xs text-rose-900 shadow-2xs">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-rose-100 text-rose-600">
+                <Trash2 size={16} />
+              </div>
+              <div>
+                <p className="font-bold text-rose-950">Viewing Soft-Deleted Courses ({softDeletedCount})</p>
+                <p className="text-rose-800 text-[11px] mt-0.5">
+                  These courses are removed from active enrollment, but all grades, assignments, and records are preserved. Click the green <strong>Restore (↺)</strong> button under Actions to restore any course back.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setStatus('all')}
+              className="shrink-0 rounded-lg bg-white px-3 py-1.5 font-bold text-rose-900 border border-rose-300 hover:bg-rose-100 transition cursor-pointer text-xs"
+            >
+              Back to Active Courses
+            </button>
+          </div>
+        )}
+
         <div className="mb-4 grid gap-3 md:grid-cols-3">
           <Input placeholder="Search title, code, faculty..." value={q} onChange={(e) => setQ(e.target.value)} />
           <Select value={status} onChange={(e) => setStatus(e.target.value)}>
@@ -103,15 +217,29 @@ export function CourseList() {
 
         {rows.length === 0 ? (
           <Empty
-            title="No courses match"
-            body="Adjust search or filters, or create a new course for this academic semester."
+            title={status === 'soft-deleted' ? 'No soft-deleted courses' : 'No courses match'}
+            body={
+              status === 'soft-deleted'
+                ? 'You have no courses in the soft-deleted list. Any course soft-deleted using the trash button under Actions will appear here and can be restored anytime.'
+                : 'Adjust search or filters, or create a new course for this academic semester.'
+            }
             action={
-              <Link to="/lms/courses/new">
-                <Button variant="primary" className="bg-brand text-white hover:bg-brand-dark">
-                  <Plus size={16} className="text-brand-gold" />
-                  <span>Add Course</span>
+              status === 'soft-deleted' ? (
+                <Button
+                  variant="primary"
+                  className="bg-brand text-white hover:bg-brand-dark cursor-pointer"
+                  onClick={() => setStatus('all')}
+                >
+                  View Active Courses
                 </Button>
-              </Link>
+              ) : (
+                <Link to="/lms/courses/new">
+                  <Button variant="primary" className="bg-brand text-white hover:bg-brand-dark">
+                    <Plus size={16} className="text-brand-gold" />
+                    <span>Add Course</span>
+                  </Button>
+                </Link>
+              )
             }
           />
         ) : (
