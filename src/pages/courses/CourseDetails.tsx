@@ -236,8 +236,8 @@ export function CourseDetails() {
   const { state, toast } = useLms()
   const nav = useNavigate()
 
-  // Primary navigation tabs: Dashboard, Study, Practice, Assessments
-  const [activeTab, setActiveTab] = useState<'Dashboard' | 'Study' | 'Practice' | 'Assessments'>('Dashboard')
+  // Primary navigation tabs: Dashboard, Syllabus, Study, Practice, Assessments
+  const [activeTab, setActiveTab] = useState<'Dashboard' | 'Syllabus' | 'Study' | 'Practice' | 'Assessments'>('Dashboard')
   // Assessments tab view: 'report' for Attempt Report, 'list' for list of course tests/assignments
   const [assessmentView, setAssessmentView] = useState<'report' | 'list'>('report')
 
@@ -343,7 +343,7 @@ export function CourseDetails() {
           {/* Right: Navigation Tabs (Dashboard, Study, Practice, Assessments)
               NOTE: AI Tutor explicitly ignored here as requested */}
           <div className="flex items-center gap-1 rounded-full bg-white/10 p-1 backdrop-blur-md">
-            {(['Dashboard', 'Study', 'Practice', 'Assessments'] as const).map((tab) => {
+            {(['Dashboard', 'Syllabus', 'Study', 'Practice', 'Assessments'] as const).map((tab) => {
               const active = activeTab === tab
               return (
                 <button
@@ -438,8 +438,8 @@ export function CourseDetails() {
             </div>
           </div>
 
-          {/* Row 2: Practice Cards (Flashcards & Custom Practice) */}
-          <div className="grid gap-4 md:grid-cols-2">
+          {/* Row 2: Practice & Syllabus Action Cards */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <div className="flex flex-col justify-between rounded-2xl border border-border bg-card p-5 shadow-2xs sm:flex-row sm:items-center">
               <div className="flex items-start gap-4">
                 <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-brand-soft text-brand ring-1 ring-brand-border">
@@ -465,7 +465,7 @@ export function CourseDetails() {
               <button
                 type="button"
                 onClick={() => setFlashcardModal(true)}
-                className="mt-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand hover:bg-brand-dark px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition active:scale-95 sm:mt-0 sm:shrink-0"
+                className="mt-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand hover:bg-brand-dark px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition active:scale-95 sm:mt-0 sm:shrink-0 cursor-pointer"
               >
                 <span>Start practice</span>
                 <ChevronRight size={14} />
@@ -492,273 +492,43 @@ export function CourseDetails() {
               <button
                 type="button"
                 onClick={() => setCustomPracticeModal(true)}
-                className="mt-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand hover:bg-brand-dark px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition active:scale-95 sm:mt-0 sm:shrink-0"
+                className="mt-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand hover:bg-brand-dark px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition active:scale-95 sm:mt-0 sm:shrink-0 cursor-pointer"
               >
                 <span>Start practice</span>
                 <ChevronRight size={14} />
               </button>
             </div>
-          </div>
 
-          {/* Row 3: Comprehensive 5-Unit Course Syllabus */}
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-2xs">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between border-b border-border pb-4">
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-full bg-brand/10 border border-brand/20 px-2.5 py-0.5 text-[11px] font-bold text-brand uppercase tracking-wider">
-                    Official 5-Unit Syllabus
-                  </span>
-                  <span className="rounded-full bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-700">
-                    Regulation R20 (Autonomous)
-                  </span>
-                  <span className="text-xs text-muted-foreground font-semibold">
-                    {course.code} · {course.title}
-                  </span>
+            {/* Course Syllabus Component in Dashboard — Click button to view syllabus */}
+            <div className="flex flex-col justify-between rounded-2xl border border-border bg-card p-5 shadow-2xs sm:flex-row sm:items-center">
+              <div className="flex items-start gap-4">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-brand/10 text-brand ring-1 ring-brand/20">
+                  <BookOpen size={26} className="text-brand" />
                 </div>
-                <h3 className="mt-1.5 text-base font-bold text-text-heading">
-                  Course Syllabus & Unit Curriculum
-                </h3>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  Complete prescribed 5-unit curriculum with lecture hours, topics breakdown, key algorithms, and learning outcomes.
-                </p>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-text-heading">Course Syllabus</h3>
+                    <span className="rounded-full bg-brand-gold-soft px-2 py-0.5 text-[10px] font-semibold text-brand-gold-dark">
+                      5 Units · R20
+                    </span>
+                  </div>
+                  <p className="mt-1 max-w-sm text-xs leading-relaxed text-muted-foreground">
+                    Prescribed 5-unit syllabus with lecture hours, topics, and outcomes for {course.title}.
+                  </p>
+                </div>
               </div>
-
-              {/* Action buttons */}
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (expandedUnits.length === 5) {
-                      setExpandedUnits([])
-                    } else {
-                      setExpandedUnits([1, 2, 3, 4, 5])
-                    }
-                  }}
-                  className="rounded-xl border border-border bg-secondary/60 px-3 py-1.5 text-xs font-semibold text-text-heading hover:bg-secondary transition active:scale-95 cursor-pointer"
-                >
-                  {expandedUnits.length === 5 ? 'Collapse All Units' : 'Expand All 5 Units'}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => toast('success', `Exporting 5-Unit Syllabus PDF for ${course.code} — ${course.title} (Regulation R20)`)}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-white px-3 py-1.5 text-xs font-semibold text-brand hover:bg-brand-soft hover:border-brand/40 transition active:scale-95 shadow-2xs cursor-pointer"
-                >
-                  <Download size={14} />
-                  <span>Download Syllabus</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Filter Pills: All Units / Unit 1..5 */}
-            <div className="my-3.5 flex flex-wrap items-center justify-between gap-2 text-xs">
-              <div className="flex flex-wrap items-center gap-1.5">
-                <span className="text-muted-foreground font-semibold mr-1">Filter Unit:</span>
-                <button
-                  type="button"
-                  onClick={() => setSyllabusUnitFilter('all')}
-                  className={`rounded-full px-3 py-1 font-semibold text-xs transition cursor-pointer ${
-                    syllabusUnitFilter === 'all'
-                      ? 'bg-brand text-white shadow-xs'
-                      : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
-                  }`}
-                >
-                  All 5 Units
-                </button>
-                {syllabus5Units.map((u) => (
-                  <button
-                    key={u.unitNumber}
-                    type="button"
-                    onClick={() => setSyllabusUnitFilter(u.unitNumber)}
-                    className={`rounded-full px-2.5 py-1 font-semibold text-xs transition cursor-pointer ${
-                      syllabusUnitFilter === u.unitNumber
-                        ? 'bg-brand text-white shadow-xs'
-                        : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
-                    }`}
-                  >
-                    {u.unitRoman}
-                  </button>
-                ))}
-              </div>
-
-              {/* Syllabus Search */}
-              <div className="relative w-full sm:w-64">
-                <Search className="absolute left-2.5 top-2 text-muted-foreground" size={14} />
-                <input
-                  type="text"
-                  value={syllabusSearch}
-                  onChange={(e) => setSyllabusSearch(e.target.value)}
-                  placeholder="Search topics, algorithms..."
-                  className="w-full rounded-xl border border-border bg-secondary/40 py-1.5 pl-8 pr-2.5 text-xs text-foreground placeholder:text-muted-foreground transition focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-                />
-              </div>
-            </div>
-
-            {/* Units List */}
-            <div className="space-y-3">
-              {syllabus5Units
-                .filter((u) => syllabusUnitFilter === 'all' || syllabusUnitFilter === u.unitNumber)
-                .filter((u) => {
-                  if (!syllabusSearch.trim()) return true
-                  const q = syllabusSearch.toLowerCase()
-                  return (
-                    u.title.toLowerCase().includes(q) ||
-                    u.topics.some((t) => t.toLowerCase().includes(q)) ||
-                    u.keyAlgorithmsOrMethods.some((a) => a.toLowerCase().includes(q)) ||
-                    u.learningOutcomes.toLowerCase().includes(q)
-                  )
-                })
-                .map((unit) => {
-                  const isExpanded = expandedUnits.includes(unit.unitNumber)
-                  const toggleExpand = () => {
-                    setExpandedUnits((prev) =>
-                      prev.includes(unit.unitNumber)
-                        ? prev.filter((n) => n !== unit.unitNumber)
-                        : [...prev, unit.unitNumber]
-                    )
-                  }
-
-                  return (
-                    <div
-                      key={unit.unitNumber}
-                      className="rounded-xl border border-border bg-card overflow-hidden transition shadow-2xs hover:border-brand/30"
-                    >
-                      {/* Unit Header Bar */}
-                      <button
-                        type="button"
-                        onClick={toggleExpand}
-                        className="w-full p-4 flex items-center justify-between text-left transition hover:bg-secondary/40 cursor-pointer"
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <span className="grid h-8 w-18 shrink-0 place-items-center rounded-lg bg-brand/10 text-brand font-bold text-xs border border-brand/20">
-                            {unit.unitRoman}
-                          </span>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2">
-                              <h4 className="font-bold text-sm text-text-heading truncate">
-                                {unit.title}
-                              </h4>
-                              <span
-                                className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                                  unit.status === 'Completed'
-                                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                                    : unit.status === 'In Progress'
-                                    ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                                    : 'bg-secondary text-muted-foreground border border-border'
-                                }`}
-                              >
-                                {unit.status} ({unit.progressPct}%)
-                              </span>
-                            </div>
-                            <p className="mt-0.5 text-xs text-muted-foreground">
-                              {unit.hours} Lecture Hours · {unit.weightage}% Exam Weightage · {unit.topics.length} Subtopics
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2 shrink-0 ml-3">
-                          <span className="text-xs font-semibold text-brand hidden sm:inline">
-                            {isExpanded ? 'Hide Details' : 'View Topics'}
-                          </span>
-                          <div
-                            className={`p-1 rounded-lg text-muted-foreground transition-transform ${
-                              isExpanded ? 'rotate-180' : ''
-                            }`}
-                          >
-                            <ChevronDown size={16} />
-                          </div>
-                        </div>
-                      </button>
-
-                      {/* Expanded Unit Details */}
-                      {isExpanded && (
-                        <div className="border-t border-border bg-secondary/20 p-4 space-y-3.5 text-xs">
-                          {/* Unit Topics Breakdown */}
-                          <div>
-                            <h5 className="font-bold text-text-heading uppercase tracking-wider text-[11px] mb-2 flex items-center gap-1.5">
-                              <FileText size={13} className="text-brand" />
-                              <span>Detailed Topics Curriculum:</span>
-                            </h5>
-                            <div className="grid gap-1.5 sm:grid-cols-2">
-                              {unit.topics.map((topic, i) => (
-                                <div
-                                  key={i}
-                                  className="flex items-start gap-2 rounded-lg border border-border/70 bg-card p-2.5 text-xs text-foreground"
-                                >
-                                  <span className="mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full bg-brand-soft text-[10px] font-bold text-brand">
-                                    {i + 1}
-                                  </span>
-                                  <span className="leading-snug">{topic}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Key Algorithms / Primitives */}
-                          {unit.keyAlgorithmsOrMethods.length > 0 && (
-                            <div>
-                              <h5 className="font-bold text-text-heading text-[11px] uppercase tracking-wider mb-1.5">
-                                Prescribed Algorithms & Methods:
-                              </h5>
-                              <div className="flex flex-wrap gap-1.5">
-                                {unit.keyAlgorithmsOrMethods.map((algo, idx) => (
-                                  <span
-                                    key={idx}
-                                    className="rounded-lg border border-brand/20 bg-brand/5 px-2.5 py-1 text-[11px] font-semibold text-brand"
-                                  >
-                                    ⚙️ {algo}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Learning Outcomes */}
-                          <div className="rounded-xl border border-emerald-500/20 bg-emerald-50/40 p-3 text-emerald-900">
-                            <span className="font-bold text-[11px] uppercase tracking-wider block text-emerald-800">
-                              Target Learning Outcome (Course Outcome CO{unit.unitNumber}):
-                            </span>
-                            <p className="mt-1 text-xs leading-relaxed font-medium">
-                              {unit.learningOutcomes}
-                            </p>
-                          </div>
-
-                          {/* Prescribed Reference */}
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1 border-t border-border/60">
-                            <div className="text-[11px] text-muted-foreground">
-                              <span className="font-bold text-text-heading">Prescribed Reading: </span>
-                              <span>{unit.textbookReference}</span>
-                            </div>
-
-                            <div className="flex items-center gap-2 shrink-0">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setActiveTab('Study')
-                                  setStudySubTab('Materials')
-                                }}
-                                className="rounded-lg bg-brand hover:bg-brand-dark px-3 py-1.5 text-xs font-bold text-white transition active:scale-95 cursor-pointer"
-                              >
-                                Study Unit Materials
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => setCustomPracticeModal(true)}
-                                className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-text-heading hover:bg-secondary transition active:scale-95 cursor-pointer"
-                              >
-                                Practice Drill
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
+              <button
+                type="button"
+                onClick={() => setActiveTab('Syllabus')}
+                className="mt-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand hover:bg-brand-dark px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition active:scale-95 sm:mt-0 sm:shrink-0 cursor-pointer"
+              >
+                <span>View Syllabus</span>
+                <ChevronRight size={14} />
+              </button>
             </div>
           </div>
 
-          {/* Row 4: Topic Heat Map — With Fixed-Height Status Bar & Shaking-Free Click Animation */}
+          {/* Row 3: Topic Heat Map — With Fixed-Height Status Bar & Shaking-Free Click Animation */}
           <div className="rounded-2xl border border-border bg-card p-5 shadow-2xs">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>
@@ -950,6 +720,288 @@ export function CourseDetails() {
                   </div>
                 )
               })}
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* TAB: SYLLABUS — 5 UNITS CURRICULUM */}
+      {activeTab === 'Syllabus' && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="space-y-6"
+        >
+          {/* Syllabus Header Card */}
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-2xs">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between border-b border-border pb-4">
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full bg-brand/10 border border-brand/20 px-2.5 py-0.5 text-[11px] font-bold text-brand uppercase tracking-wider">
+                    Prescribed 5-Unit Syllabus
+                  </span>
+                  <span className="rounded-full bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-700">
+                    Regulation R20 (Autonomous)
+                  </span>
+                  <span className="text-xs text-muted-foreground font-semibold">
+                    {course.code} · {course.title}
+                  </span>
+                </div>
+                <h2 className="mt-1.5 text-xl font-bold text-text-heading">
+                  Course Syllabus & Academic Curriculum
+                </h2>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Complete 5-unit curriculum with lecture hours, topics breakdown, key algorithms, and Bloom learning outcomes.
+                </p>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('Dashboard')}
+                  className="rounded-xl border border-border bg-secondary/60 px-3 py-1.5 text-xs font-semibold text-text-heading hover:bg-secondary transition active:scale-95 cursor-pointer flex items-center gap-1.5"
+                >
+                  <ArrowLeft size={13} />
+                  <span>Back to Dashboard</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (expandedUnits.length === 5) {
+                      setExpandedUnits([])
+                    } else {
+                      setExpandedUnits([1, 2, 3, 4, 5])
+                    }
+                  }}
+                  className="rounded-xl border border-border bg-secondary/60 px-3 py-1.5 text-xs font-semibold text-text-heading hover:bg-secondary transition active:scale-95 cursor-pointer"
+                >
+                  {expandedUnits.length === 5 ? 'Collapse All Units' : 'Expand All 5 Units'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => toast('success', `Exporting 5-Unit Syllabus PDF for ${course.code} — ${course.title} (Regulation R20)`)}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-white px-3 py-1.5 text-xs font-semibold text-brand hover:bg-brand-soft hover:border-brand/40 transition active:scale-95 shadow-2xs cursor-pointer"
+                >
+                  <Download size={14} />
+                  <span>Download Syllabus</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Specific Unit Syllabus Buttons Bar */}
+            <div className="my-3.5 flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-muted-foreground font-semibold mr-1">Select Unit:</span>
+                <button
+                  type="button"
+                  onClick={() => setSyllabusUnitFilter('all')}
+                  className={`rounded-full px-3 py-1 font-semibold text-xs transition cursor-pointer ${
+                    syllabusUnitFilter === 'all'
+                      ? 'bg-brand text-white shadow-xs'
+                      : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
+                  }`}
+                >
+                  All 5 Units
+                </button>
+                {syllabus5Units.map((u) => (
+                  <button
+                    key={u.unitNumber}
+                    type="button"
+                    onClick={() => {
+                      setSyllabusUnitFilter(u.unitNumber)
+                      if (!expandedUnits.includes(u.unitNumber)) {
+                        setExpandedUnits((prev) => [...prev, u.unitNumber])
+                      }
+                    }}
+                    className={`rounded-full px-3 py-1 font-semibold text-xs transition cursor-pointer ${
+                      syllabusUnitFilter === u.unitNumber
+                        ? 'bg-brand text-white shadow-xs'
+                        : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
+                    }`}
+                  >
+                    {u.unitRoman}
+                  </button>
+                ))}
+              </div>
+
+              {/* Syllabus Search */}
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-2.5 top-2 text-muted-foreground" size={14} />
+                <input
+                  type="text"
+                  value={syllabusSearch}
+                  onChange={(e) => setSyllabusSearch(e.target.value)}
+                  placeholder="Filter topics, algorithms..."
+                  className="w-full rounded-xl border border-border bg-secondary/40 py-1.5 pl-8 pr-2.5 text-xs text-foreground placeholder:text-muted-foreground transition focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                />
+              </div>
+            </div>
+
+            {/* Units List */}
+            <div className="space-y-3">
+              {syllabus5Units
+                .filter((u) => syllabusUnitFilter === 'all' || syllabusUnitFilter === u.unitNumber)
+                .filter((u) => {
+                  if (!syllabusSearch.trim()) return true
+                  const q = syllabusSearch.toLowerCase()
+                  return (
+                    u.title.toLowerCase().includes(q) ||
+                    u.topics.some((t) => t.toLowerCase().includes(q)) ||
+                    u.keyAlgorithmsOrMethods.some((a) => a.toLowerCase().includes(q)) ||
+                    u.learningOutcomes.toLowerCase().includes(q)
+                  )
+                })
+                .map((unit) => {
+                  const isExpanded = expandedUnits.includes(unit.unitNumber)
+                  const toggleExpand = () => {
+                    setExpandedUnits((prev) =>
+                      prev.includes(unit.unitNumber)
+                        ? prev.filter((n) => n !== unit.unitNumber)
+                        : [...prev, unit.unitNumber]
+                    )
+                  }
+
+                  return (
+                    <div
+                      key={unit.unitNumber}
+                      className="rounded-xl border border-border bg-card overflow-hidden transition shadow-2xs hover:border-brand/30"
+                    >
+                      {/* Unit Header Bar */}
+                      <button
+                        type="button"
+                        onClick={toggleExpand}
+                        className="w-full p-4 flex items-center justify-between text-left transition hover:bg-secondary/40 cursor-pointer"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span className="grid h-8 w-18 shrink-0 place-items-center rounded-lg bg-brand/10 text-brand font-bold text-xs border border-brand/20">
+                            {unit.unitRoman}
+                          </span>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-bold text-sm text-text-heading truncate">
+                                {unit.title}
+                              </h4>
+                              <span
+                                className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                                  unit.status === 'Completed'
+                                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                                    : unit.status === 'In Progress'
+                                    ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                                    : 'bg-secondary text-muted-foreground border border-border'
+                                }`}
+                              >
+                                {unit.status} ({unit.progressPct}%)
+                              </span>
+                            </div>
+                            <p className="mt-0.5 text-xs text-muted-foreground">
+                              {unit.hours} Lecture Hours · {unit.weightage}% Exam Weightage · {unit.topics.length} Subtopics
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0 ml-3">
+                          <span className="text-xs font-semibold text-brand hidden sm:inline">
+                            {isExpanded ? 'Hide Details' : 'View Topics'}
+                          </span>
+                          <div
+                            className={`p-1 rounded-lg text-muted-foreground transition-transform ${
+                              isExpanded ? 'rotate-180' : ''
+                            }`}
+                          >
+                            <ChevronDown size={16} />
+                          </div>
+                        </div>
+                      </button>
+
+                      {/* Expanded Unit Details */}
+                      {isExpanded && (
+                        <div className="border-t border-border bg-secondary/20 p-4 space-y-3.5 text-xs">
+                          {/* Unit Topics Breakdown */}
+                          <div>
+                            <h5 className="font-bold text-text-heading uppercase tracking-wider text-[11px] mb-2 flex items-center gap-1.5">
+                              <FileText size={13} className="text-brand" />
+                              <span>Detailed Topics Curriculum:</span>
+                            </h5>
+                            <div className="grid gap-1.5 sm:grid-cols-2">
+                              {unit.topics.map((topic, i) => (
+                                <div
+                                  key={i}
+                                  className="flex items-start gap-2 rounded-lg border border-border/70 bg-card p-2.5 text-xs text-foreground"
+                                >
+                                  <span className="mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full bg-brand-soft text-[10px] font-bold text-brand">
+                                    {i + 1}
+                                  </span>
+                                  <span className="leading-snug">{topic}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Key Algorithms / Primitives */}
+                          {unit.keyAlgorithmsOrMethods.length > 0 && (
+                            <div>
+                              <h5 className="font-bold text-text-heading text-[11px] uppercase tracking-wider mb-1.5">
+                                Prescribed Algorithms & Methods:
+                              </h5>
+                              <div className="flex flex-wrap gap-1.5">
+                                {unit.keyAlgorithmsOrMethods.map((algo, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="rounded-lg border border-brand/20 bg-brand/5 px-2.5 py-1 text-[11px] font-semibold text-brand"
+                                  >
+                                    ⚙️ {algo}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Learning Outcomes */}
+                          <div className="rounded-xl border border-emerald-500/20 bg-emerald-50/40 p-3 text-emerald-900">
+                            <span className="font-bold text-[11px] uppercase tracking-wider block text-emerald-800">
+                              Target Learning Outcome (Course Outcome CO{unit.unitNumber}):
+                            </span>
+                            <p className="mt-1 text-xs leading-relaxed font-medium">
+                              {unit.learningOutcomes}
+                            </p>
+                          </div>
+
+                          {/* Prescribed Reference */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1 border-t border-border/60">
+                            <div className="text-[11px] text-muted-foreground">
+                              <span className="font-bold text-text-heading">Prescribed Reading: </span>
+                              <span>{unit.textbookReference}</span>
+                            </div>
+
+                            <div className="flex items-center gap-2 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setActiveTab('Study')
+                                  setStudySubTab('Materials')
+                                }}
+                                className="rounded-lg bg-brand hover:bg-brand-dark px-3 py-1.5 text-xs font-bold text-white transition active:scale-95 cursor-pointer"
+                              >
+                                Study Unit Materials
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setCustomPracticeModal(true)}
+                                className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-text-heading hover:bg-secondary transition active:scale-95 cursor-pointer"
+                              >
+                                Practice Drill
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
             </div>
           </div>
         </motion.div>
