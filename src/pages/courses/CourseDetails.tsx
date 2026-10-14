@@ -10,22 +10,16 @@ import {
   CheckCircle2,
   Layers,
   ChevronRight,
-  ChevronDown,
-  Search,
   X,
   RotateCcw,
-  PlayCircle,
-  Check,
   ShieldCheck,
   Compass,
-  FileText,
-  Download,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
 import { useLms } from '../../store/LmsStore'
 import { Button, Card, Empty, Page } from '../../components/ui'
 import { formatDate } from '../../lib/utils'
-import { getCourse5UnitsSyllabus } from '../../data/courseSyllabus'
+import { UnifiedLearningView } from './UnifiedLearningView'
 
 /**
  * ==========================================================================================
@@ -164,76 +158,10 @@ const BLOOM_DATA = [
   { level: 'Evaluate', pct: 55, tone: 'amber' },
 ]
 
-// Syllabus Rail Data for the Study Tab (as shown in the uploaded screenshot)
-type SyllabusTopic = {
-  id: string
-  name: string
-  score: number
-  tone: 'emerald' | 'amber' | 'rose'
-}
-
-type SyllabusChapter = {
-  id: string
-  title: string
-  avgScore: number
-  topics: SyllabusTopic[]
-}
-
-const SYLLABUS_CHAPTERS: SyllabusChapter[] = [
-  {
-    id: 'ch-foundations',
-    title: 'Foundations',
-    avgScore: 75,
-    topics: [
-      { id: 't-1', name: 'Data vs information', score: 69, tone: 'amber' },
-      { id: 't-2', name: 'DBMS vs file systems', score: 61, tone: 'amber' },
-      { id: 't-3', name: 'Database architecture', score: 38, tone: 'rose' },
-      { id: 't-4', name: 'Three-schema architecture', score: 79, tone: 'emerald' },
-      { id: 't-5', name: 'Data independence', score: 80, tone: 'emerald' },
-      { id: 't-6', name: 'DBMS components', score: 84, tone: 'emerald' },
-      { id: 't-7', name: 'Storage manager', score: 92, tone: 'emerald' },
-      { id: 't-8', name: 'Query processor', score: 60, tone: 'amber' },
-      { id: 't-9', name: 'Transaction manager', score: 69, tone: 'amber' },
-      { id: 't-10', name: 'ER model basics', score: 59, tone: 'amber' },
-      { id: 't-11', name: 'Entities & attributes', score: 67, tone: 'amber' },
-      { id: 't-12', name: 'Relationships', score: 75, tone: 'emerald' },
-      { id: 't-13', name: 'Cardinality', score: 85, tone: 'emerald' },
-      { id: 't-14', name: 'Weak entities', score: 84, tone: 'emerald' },
-    ],
-  },
-  {
-    id: 'ch-core',
-    title: 'Core Concepts',
-    avgScore: 79,
-    topics: [
-      { id: 't-15', name: 'File organization on disk', score: 62, tone: 'amber' },
-      { id: 't-16', name: 'B+ Tree Indexing', score: 92, tone: 'emerald' },
-      { id: 't-17', name: 'Hash-based Indexing', score: 74, tone: 'emerald' },
-    ],
-  },
-  {
-    id: 'ch-applied',
-    title: 'Applied Methods',
-    avgScore: 82,
-    topics: [
-      { id: 't-18', name: 'Relational Algebra Operators', score: 88, tone: 'emerald' },
-      { id: 't-19', name: 'SQL Query Optimization', score: 82, tone: 'emerald' },
-    ],
-  },
-  {
-    id: 'ch-advanced',
-    title: 'Advanced Topics',
-    avgScore: 70,
-    topics: [
-      { id: 't-20', name: 'ACID Transaction Guarantees', score: 88, tone: 'emerald' },
-      { id: 't-21', name: 'Two-Phase Locking (2PL)', score: 76, tone: 'emerald' },
-    ],
-  },
-]
 
 export function CourseDetails() {
   const { courseId } = useParams()
-  const { state, toast } = useLms()
+  const { state } = useLms()
   const nav = useNavigate()
 
   // Primary navigation tabs: Dashboard, Syllabus, Study, Practice, Assessments
@@ -249,17 +177,6 @@ export function CourseDetails() {
   const [hoveredCell, setHoveredCell] = useState<HeatmapCell | null>(null)
   const [selectedHeatmapCell, setSelectedHeatmapCell] = useState<HeatmapCell | null>(null)
 
-  // 5 Units Syllabus state in Course Dashboard
-  const [expandedUnits, setExpandedUnits] = useState<number[]>([1, 2])
-  const [syllabusUnitFilter, setSyllabusUnitFilter] = useState<'all' | number>('all')
-  const [syllabusSearch, setSyllabusSearch] = useState('')
-
-  // Study Tab States
-  const [selectedTopicId, setSelectedTopicId] = useState('t-1')
-  const [expandedChapter, setExpandedChapter] = useState('ch-foundations')
-  const [topicSearch, setTopicSearch] = useState('')
-  const [studySubTab, setStudySubTab] = useState<'Learn' | 'Materials' | 'Practice'>('Materials')
-  const [materialModal, setMaterialModal] = useState<{ title: string; type: string; content: string } | null>(null)
 
   const course =
     state.courses.find((c) => c.id === courseId) ||
@@ -303,13 +220,6 @@ export function CourseDetails() {
     },
   ]
 
-  // Find currently active syllabus topic
-  const currentSyllabusTopic =
-    SYLLABUS_CHAPTERS.flatMap((c) => c.topics).find((t) => t.id === selectedTopicId) ||
-    SYLLABUS_CHAPTERS[0].topics[0]
-
-  // 5 Units Syllabus Data for the course
-  const syllabus5Units = getCourse5UnitsSyllabus(course.id, course.title, course.code)
   const activeHeatmapCell = selectedHeatmapCell || hoveredCell
 
   return (
@@ -349,8 +259,14 @@ export function CourseDetails() {
                 <button
                   key={tab}
                   type="button"
-                  onClick={() => setActiveTab(tab)}
-                  className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
+                  onClick={() => {
+                    if (tab === 'Syllabus') {
+                      setActiveTab('Study')
+                    } else {
+                      setActiveTab(tab)
+                    }
+                  }}
+                  className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
                     active
                       ? 'bg-white text-brand shadow-md'
                       : 'text-white/80 hover:bg-white/10 hover:text-white'
@@ -519,7 +435,7 @@ export function CourseDetails() {
               </div>
               <button
                 type="button"
-                onClick={() => setActiveTab('Syllabus')}
+                onClick={() => setActiveTab('Study')}
                 className="mt-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand hover:bg-brand-dark px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition active:scale-95 sm:mt-0 sm:shrink-0 cursor-pointer"
               >
                 <span>View Syllabus</span>
@@ -725,617 +641,20 @@ export function CourseDetails() {
         </motion.div>
       )}
 
-      {/* TAB: SYLLABUS — 5 UNITS CURRICULUM */}
-      {activeTab === 'Syllabus' && (
+      {/* UNIFIED COURSE LEARNING WORKSPACE (Merged Syllabus + Study Tabs) */}
+      {(activeTab === 'Syllabus' || activeTab === 'Study') && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="space-y-6"
         >
-          {/* Syllabus Header Card */}
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-2xs">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between border-b border-border pb-4">
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-full bg-brand/10 border border-brand/20 px-2.5 py-0.5 text-[11px] font-bold text-brand uppercase tracking-wider">
-                    Prescribed 5-Unit Syllabus
-                  </span>
-                  <span className="rounded-full bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-700">
-                    Regulation R20 (Autonomous)
-                  </span>
-                  <span className="text-xs text-muted-foreground font-semibold">
-                    {course.code} · {course.title}
-                  </span>
-                </div>
-                <h2 className="mt-1.5 text-xl font-bold text-text-heading">
-                  Course Syllabus & Academic Curriculum
-                </h2>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  Complete 5-unit curriculum with lecture hours, topics breakdown, key algorithms, and Bloom learning outcomes.
-                </p>
-              </div>
-
-              {/* Action buttons */}
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('Dashboard')}
-                  className="rounded-xl border border-border bg-secondary/60 px-3 py-1.5 text-xs font-semibold text-text-heading hover:bg-secondary transition active:scale-95 cursor-pointer flex items-center gap-1.5"
-                >
-                  <ArrowLeft size={13} />
-                  <span>Back to Dashboard</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (expandedUnits.length === 5) {
-                      setExpandedUnits([])
-                    } else {
-                      setExpandedUnits([1, 2, 3, 4, 5])
-                    }
-                  }}
-                  className="rounded-xl border border-border bg-secondary/60 px-3 py-1.5 text-xs font-semibold text-text-heading hover:bg-secondary transition active:scale-95 cursor-pointer"
-                >
-                  {expandedUnits.length === 5 ? 'Collapse All Units' : 'Expand All 5 Units'}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => toast('success', `Exporting 5-Unit Syllabus PDF for ${course.code} — ${course.title} (Regulation R20)`)}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-white px-3 py-1.5 text-xs font-semibold text-brand hover:bg-brand-soft hover:border-brand/40 transition active:scale-95 shadow-2xs cursor-pointer"
-                >
-                  <Download size={14} />
-                  <span>Download Syllabus</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Specific Unit Syllabus Buttons Bar */}
-            <div className="my-3.5 flex flex-wrap items-center justify-between gap-2 text-xs">
-              <div className="flex flex-wrap items-center gap-1.5">
-                <span className="text-muted-foreground font-semibold mr-1">Select Unit:</span>
-                <button
-                  type="button"
-                  onClick={() => setSyllabusUnitFilter('all')}
-                  className={`rounded-full px-3 py-1 font-semibold text-xs transition cursor-pointer ${
-                    syllabusUnitFilter === 'all'
-                      ? 'bg-brand text-white shadow-xs'
-                      : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
-                  }`}
-                >
-                  All 5 Units
-                </button>
-                {syllabus5Units.map((u) => (
-                  <button
-                    key={u.unitNumber}
-                    type="button"
-                    onClick={() => {
-                      setSyllabusUnitFilter(u.unitNumber)
-                      if (!expandedUnits.includes(u.unitNumber)) {
-                        setExpandedUnits((prev) => [...prev, u.unitNumber])
-                      }
-                    }}
-                    className={`rounded-full px-3 py-1 font-semibold text-xs transition cursor-pointer ${
-                      syllabusUnitFilter === u.unitNumber
-                        ? 'bg-brand text-white shadow-xs'
-                        : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
-                    }`}
-                  >
-                    {u.unitRoman}
-                  </button>
-                ))}
-              </div>
-
-              {/* Syllabus Search */}
-              <div className="relative w-full sm:w-64">
-                <Search className="absolute left-2.5 top-2 text-muted-foreground" size={14} />
-                <input
-                  type="text"
-                  value={syllabusSearch}
-                  onChange={(e) => setSyllabusSearch(e.target.value)}
-                  placeholder="Filter topics, algorithms..."
-                  className="w-full rounded-xl border border-border bg-secondary/40 py-1.5 pl-8 pr-2.5 text-xs text-foreground placeholder:text-muted-foreground transition focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-                />
-              </div>
-            </div>
-
-            {/* Units List */}
-            <div className="space-y-3">
-              {syllabus5Units
-                .filter((u) => syllabusUnitFilter === 'all' || syllabusUnitFilter === u.unitNumber)
-                .filter((u) => {
-                  if (!syllabusSearch.trim()) return true
-                  const q = syllabusSearch.toLowerCase()
-                  return (
-                    u.title.toLowerCase().includes(q) ||
-                    u.topics.some((t) => t.toLowerCase().includes(q)) ||
-                    u.keyAlgorithmsOrMethods.some((a) => a.toLowerCase().includes(q)) ||
-                    u.learningOutcomes.toLowerCase().includes(q)
-                  )
-                })
-                .map((unit) => {
-                  const isExpanded = expandedUnits.includes(unit.unitNumber)
-                  const toggleExpand = () => {
-                    setExpandedUnits((prev) =>
-                      prev.includes(unit.unitNumber)
-                        ? prev.filter((n) => n !== unit.unitNumber)
-                        : [...prev, unit.unitNumber]
-                    )
-                  }
-
-                  return (
-                    <div
-                      key={unit.unitNumber}
-                      className="rounded-xl border border-border bg-card overflow-hidden transition shadow-2xs hover:border-brand/30"
-                    >
-                      {/* Unit Header Bar */}
-                      <button
-                        type="button"
-                        onClick={toggleExpand}
-                        className="w-full p-4 flex items-center justify-between text-left transition hover:bg-secondary/40 cursor-pointer"
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <span className="grid h-8 w-18 shrink-0 place-items-center rounded-lg bg-brand/10 text-brand font-bold text-xs border border-brand/20">
-                            {unit.unitRoman}
-                          </span>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2">
-                              <h4 className="font-bold text-sm text-text-heading truncate">
-                                {unit.title}
-                              </h4>
-                              <span
-                                className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                                  unit.status === 'Completed'
-                                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                                    : unit.status === 'In Progress'
-                                    ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                                    : 'bg-secondary text-muted-foreground border border-border'
-                                }`}
-                              >
-                                {unit.status} ({unit.progressPct}%)
-                              </span>
-                            </div>
-                            <p className="mt-0.5 text-xs text-muted-foreground">
-                              {unit.hours} Lecture Hours · {unit.weightage}% Exam Weightage · {unit.topics.length} Subtopics
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2 shrink-0 ml-3">
-                          <span className="text-xs font-semibold text-brand hidden sm:inline">
-                            {isExpanded ? 'Hide Details' : 'View Topics'}
-                          </span>
-                          <div
-                            className={`p-1 rounded-lg text-muted-foreground transition-transform ${
-                              isExpanded ? 'rotate-180' : ''
-                            }`}
-                          >
-                            <ChevronDown size={16} />
-                          </div>
-                        </div>
-                      </button>
-
-                      {/* Expanded Unit Details */}
-                      {isExpanded && (
-                        <div className="border-t border-border bg-secondary/20 p-4 space-y-3.5 text-xs">
-                          {/* Unit Topics Breakdown */}
-                          <div>
-                            <h5 className="font-bold text-text-heading uppercase tracking-wider text-[11px] mb-2 flex items-center gap-1.5">
-                              <FileText size={13} className="text-brand" />
-                              <span>Detailed Topics Curriculum:</span>
-                            </h5>
-                            <div className="grid gap-1.5 sm:grid-cols-2">
-                              {unit.topics.map((topic, i) => (
-                                <div
-                                  key={i}
-                                  className="flex items-start gap-2 rounded-lg border border-border/70 bg-card p-2.5 text-xs text-foreground"
-                                >
-                                  <span className="mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full bg-brand-soft text-[10px] font-bold text-brand">
-                                    {i + 1}
-                                  </span>
-                                  <span className="leading-snug">{topic}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Key Algorithms / Primitives */}
-                          {unit.keyAlgorithmsOrMethods.length > 0 && (
-                            <div>
-                              <h5 className="font-bold text-text-heading text-[11px] uppercase tracking-wider mb-1.5">
-                                Prescribed Algorithms & Methods:
-                              </h5>
-                              <div className="flex flex-wrap gap-1.5">
-                                {unit.keyAlgorithmsOrMethods.map((algo, idx) => (
-                                  <span
-                                    key={idx}
-                                    className="rounded-lg border border-brand/20 bg-brand/5 px-2.5 py-1 text-[11px] font-semibold text-brand"
-                                  >
-                                    ⚙️ {algo}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Learning Outcomes */}
-                          <div className="rounded-xl border border-emerald-500/20 bg-emerald-50/40 p-3 text-emerald-900">
-                            <span className="font-bold text-[11px] uppercase tracking-wider block text-emerald-800">
-                              Target Learning Outcome (Course Outcome CO{unit.unitNumber}):
-                            </span>
-                            <p className="mt-1 text-xs leading-relaxed font-medium">
-                              {unit.learningOutcomes}
-                            </p>
-                          </div>
-
-                          {/* Prescribed Reference */}
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1 border-t border-border/60">
-                            <div className="text-[11px] text-muted-foreground">
-                              <span className="font-bold text-text-heading">Prescribed Reading: </span>
-                              <span>{unit.textbookReference}</span>
-                            </div>
-
-                            <div className="flex items-center gap-2 shrink-0">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setActiveTab('Study')
-                                  setStudySubTab('Materials')
-                                }}
-                                className="rounded-lg bg-brand hover:bg-brand-dark px-3 py-1.5 text-xs font-bold text-white transition active:scale-95 cursor-pointer"
-                              >
-                                Study Unit Materials
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => setCustomPracticeModal(true)}
-                                className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-text-heading hover:bg-secondary transition active:scale-95 cursor-pointer"
-                              >
-                                Practice Drill
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
-            </div>
-          </div>
+          <UnifiedLearningView
+            course={course}
+            onNavigateDashboard={() => setActiveTab('Dashboard')}
+          />
         </motion.div>
       )}
 
-      {/* TAB 2: STUDY — LESSON WITH SYLLABUS RAIL (Cloned from the Screenshot) */}
-      {activeTab === 'Study' && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="flex flex-col gap-6 lg:flex-row lg:items-start"
-        >
-          {/* Left: Syllabus Rail Accordion */}
-          <div className="w-full shrink-0 rounded-2xl border border-border bg-card p-4 shadow-2xs lg:w-80">
-            {/* Search Topics Input */}
-            <div className="relative mb-3">
-              <Search className="absolute left-3 top-2.5 text-muted-foreground" size={15} />
-              <input
-                type="text"
-                value={topicSearch}
-                onChange={(e) => setTopicSearch(e.target.value)}
-                placeholder="Search topics"
-                className="w-full rounded-xl border border-border bg-input-background py-2 pl-9 pr-3 text-xs text-foreground placeholder:text-muted-foreground transition focus:border-brand-gold focus:outline-none focus:ring-1 focus:ring-brand-gold"
-              />
-            </div>
-
-            {/* Chapters & Topics List */}
-            <div className="space-y-2">
-              {SYLLABUS_CHAPTERS.map((chap) => {
-                const isExpanded = expandedChapter === chap.id
-                const filteredTopics = chap.topics.filter((t) =>
-                  t.name.toLowerCase().includes(topicSearch.toLowerCase()),
-                )
-
-                if (topicSearch && filteredTopics.length === 0) return null
-
-                return (
-                  <div key={chap.id} className="overflow-hidden rounded-xl border border-border/80">
-                    {/* Chapter Header */}
-                    <button
-                      type="button"
-                      onClick={() => setExpandedChapter(isExpanded ? '' : chap.id)}
-                      className="flex w-full items-center justify-between bg-secondary/60 px-3.5 py-2.5 text-left text-xs font-bold text-text-heading transition hover:bg-secondary"
-                    >
-                      <div className="flex items-center gap-2">
-                        {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                        <span>{chap.title}</span>
-                      </div>
-                      <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-600/20">
-                        Avg {chap.avgScore}%
-                      </span>
-                    </button>
-
-                    {/* Topics inside this Chapter */}
-                    {isExpanded && (
-                      <div className="space-y-1 bg-card p-1.5">
-                        {filteredTopics.map((top) => {
-                          const isActive = selectedTopicId === top.id
-                          const dotColor =
-                            top.tone === 'emerald'
-                              ? 'bg-emerald-500'
-                              : top.tone === 'amber'
-                              ? 'bg-amber-500'
-                              : 'bg-rose-500'
-
-                          return (
-                            <button
-                              key={top.id}
-                              type="button"
-                              onClick={() => setSelectedTopicId(top.id)}
-                              className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-medium transition ${
-                                isActive
-                                  ? 'bg-brand text-white shadow-xs font-semibold'
-                                  : 'text-foreground hover:bg-secondary'
-                              }`}
-                            >
-                              <div className="flex items-center gap-2.5 truncate">
-                                <span
-                                  className={`h-2 w-2 shrink-0 rounded-full ${
-                                    isActive ? 'bg-white' : dotColor
-                                  }`}
-                                />
-                                <span className="truncate">{top.name}</span>
-                              </div>
-                              <span
-                                className={`ml-2 shrink-0 text-[11px] font-bold ${
-                                  isActive ? 'text-brand-gold-soft' : 'text-muted-foreground'
-                                }`}
-                              >
-                                {top.score}%
-                              </span>
-                            </button>
-                          )
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Right: Selected Lesson Workspace */}
-          <div className="flex-1 space-y-4">
-            {/* Top SASI ERP Brand Banner */}
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#4A0B1C] via-[#6B1029] to-[#801432] p-6 text-white shadow-xl ring-1 ring-white/10">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <span className="text-[11px] font-bold tracking-widest text-[#C9A227] uppercase">
-                    Study · Foundations
-                  </span>
-                  <h2 className="mt-1 text-2xl font-bold tracking-tight text-white">
-                    {currentSyllabusTopic.name}
-                  </h2>
-                  <div className="mt-2.5 flex items-center gap-2">
-                    <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-[11px] font-semibold text-white backdrop-blur-xs">
-                      2 learning items
-                    </span>
-                    <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-[11px] font-semibold text-white backdrop-blur-xs">
-                      1/2 practice sets
-                    </span>
-                  </div>
-                </div>
-
-                {/* Score & Progression Visual Indicator */}
-                <div className="flex items-center gap-3 self-start sm:self-center">
-                  <div className="flex h-11 items-center justify-center rounded-xl bg-white/10 px-3.5 text-sm font-bold text-white backdrop-blur-xs">
-                    38
-                  </div>
-                  <span className="text-[#C9A227]">→</span>
-                  <div className="flex items-center gap-2 rounded-xl bg-white px-3.5 py-2 text-xs font-bold text-text-heading shadow-md">
-                    <Layers size={14} className="text-brand" />
-                    <span>38 °C</span>
-                    <span className="flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-white">
-                      <Check size={10} />
-                    </span>
-                  </div>
-                  <div className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-white/30 bg-white/15 text-xs font-bold text-white shadow-xs backdrop-blur-xs">
-                    {currentSyllabusTopic.score}%
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Sub-Tabs: Learn, Materials, Practice
-                NOTE: Local Tutor tab omitted per sticky AI Tutor policy */}
-            <div className="flex items-center gap-1">
-              {(['Learn', 'Materials', 'Practice'] as const).map((sub) => {
-                const active = studySubTab === sub
-                return (
-                  <button
-                    key={sub}
-                    type="button"
-                    onClick={() => setStudySubTab(sub)}
-                    className={`rounded-full px-4 py-1.5 text-xs font-semibold transition ${
-                      active
-                        ? 'bg-brand text-white shadow-xs ring-1 ring-brand-gold/40'
-                        : 'bg-card text-muted-foreground border border-border hover:bg-secondary hover:text-foreground'
-                    }`}
-                  >
-                    {sub}
-                  </button>
-                )
-              })}
-            </div>
-
-            {/* SUB-TAB: MATERIALS */}
-            {studySubTab === 'Materials' && (
-              <div className="rounded-2xl border border-border bg-card p-6 shadow-2xs">
-                <div className="flex items-center justify-between border-b border-border/80 pb-3">
-                  <div>
-                    <h3 className="text-base font-bold text-text-heading">Learning materials</h3>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      Topic-specific documents plus chapter-wide overview
-                    </p>
-                  </div>
-                  <span className="text-xs font-semibold text-muted-foreground">3 items</span>
-                </div>
-
-                {/* 3 Material Cards */}
-                <div className="mt-5 grid gap-4 md:grid-cols-3">
-                  {/* Item 1: Chapter Notes */}
-                  <div className="flex flex-col justify-between rounded-xl border border-border bg-secondary/40 p-4 transition hover:border-brand/40 hover:bg-secondary">
-                    <div>
-                      <h4 className="text-xs font-bold text-text-heading line-clamp-2">
-                        Chapter notes — {currentSyllabusTopic.name}
-                      </h4>
-                      <p className="mt-1 text-[11px] text-muted-foreground">PDF · 3 pages</p>
-                    </div>
-                    <div className="mt-4">
-                      <Button
-                        className="w-full bg-brand text-white hover:bg-brand-dark py-1.5 text-xs"
-                        onClick={() =>
-                          setMaterialModal({
-                            title: `Chapter notes — ${currentSyllabusTopic.name}`,
-                            type: 'PDF Document',
-                            content:
-                              '1. Definitions:\n• Data: Raw, unorganized facts without context (e.g. "42", "Alice").\n• Information: Processed, structured data that carries meaning and context (e.g. "Alice scored 42 points in exam").\n• Metadata: Data describing the structure, types, and constraints of data.\n\n2. Database Management System (DBMS):\nA software suite designed to store, manage, and retrieve structured information with ACID guarantees, multi-user concurrency, and fault tolerance.',
-                          })
-                        }
-                      >
-                        Open
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Item 2: Worked Example Video */}
-                  <div className="flex flex-col justify-between rounded-xl border border-border bg-secondary/40 p-4 transition hover:border-brand/40 hover:bg-secondary">
-                    <div>
-                      <h4 className="text-xs font-bold text-text-heading line-clamp-2">
-                        Worked example video
-                      </h4>
-                      <p className="mt-1 text-[11px] text-muted-foreground">YouTube · 7 min</p>
-                    </div>
-                    <div className="mt-4">
-                      <Button
-                        className="w-full bg-brand text-white hover:bg-brand-dark py-1.5 text-xs flex items-center justify-center gap-1.5"
-                        onClick={() =>
-                          setMaterialModal({
-                            title: 'Worked example: Transforming Data into Information',
-                            type: 'Video Lecture',
-                            content:
-                              'Video lecture walkthrough: Understanding how database tables (Relations), tuples, and attributes transform raw unorganized logs into valuable business intelligence.',
-                          })
-                        }
-                      >
-                        <PlayCircle size={14} />
-                        <span>Open</span>
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Item 3: Foundations Overview */}
-                  <div className="flex flex-col justify-between rounded-xl border border-border bg-secondary/40 p-4 transition hover:border-brand/40 hover:bg-secondary">
-                    <div>
-                      <h4 className="text-xs font-bold text-text-heading line-clamp-2">
-                        Chapter notes — Foundations
-                      </h4>
-                      <p className="mt-1 text-[11px] text-muted-foreground">PDF · chapter-wide</p>
-                    </div>
-                    <div className="mt-4">
-                      <Button
-                        className="w-full bg-brand text-white hover:bg-brand-dark py-1.5 text-xs"
-                        onClick={() =>
-                          setMaterialModal({
-                            title: 'Chapter notes — Foundations (Overview)',
-                            type: 'PDF Summary',
-                            content:
-                              'Full foundations chapter summary:\n• File processing systems vs DBMS\n• Three-level architecture (Physical, Logical, View levels)\n• Physical vs Logical Data Independence\n• Database Users (DBA, End users, Application programmers)\n• Data models: Hierarchical, Network, Relational, Object-Oriented, and NoSQL.',
-                          })
-                        }
-                      >
-                        Open
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* SUB-TAB: LEARN */}
-            {studySubTab === 'Learn' && (
-              <div className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-2xs">
-                <div>
-                  <h3 className="text-lg font-bold text-text-heading">
-                    Core Concepts: {currentSyllabusTopic.name}
-                  </h3>
-                  <p className="text-xs text-muted-foreground">Structured conceptual walkthrough</p>
-                </div>
-
-                <div className="space-y-3 text-xs leading-relaxed text-foreground">
-                  <div className="rounded-xl border border-border bg-secondary/40 p-4">
-                    <h4 className="font-bold text-text-heading">1. What is Data?</h4>
-                    <p className="mt-1 text-muted-foreground">
-                      Data represents raw, unprocessed facts, numbers, text, or signals without context.
-                      Examples include a list of raw timestamps `1728892800` or raw values `104.2`.
-                    </p>
-                  </div>
-
-                  <div className="rounded-xl border border-border bg-secondary/40 p-4">
-                    <h4 className="font-bold text-text-heading">2. What is Information?</h4>
-                    <p className="mt-1 text-muted-foreground">
-                      Information is data that has been cleaned, structured, organized, and presented within a
-                      meaningful context so that it becomes useful for human decision making.
-                    </p>
-                  </div>
-
-                  <div className="rounded-xl border border-brand-gold/40 bg-brand-gold-soft p-4 text-brand-dark">
-                    <h4 className="font-bold">Key Distinction Table:</h4>
-                    <div className="mt-2 grid grid-cols-2 gap-2 font-medium">
-                      <p><strong>Data:</strong> Atomic, unstructured, lacking narrative.</p>
-                      <p><strong>Information:</strong> Relational, contextualized, enables action.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* SUB-TAB: PRACTICE */}
-            {studySubTab === 'Practice' && (
-              <div className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-2xs">
-                <div className="flex items-center justify-between border-b border-border pb-3">
-                  <div>
-                    <h3 className="text-base font-bold text-text-heading">Topic Drill</h3>
-                    <p className="text-xs text-muted-foreground">3 rapid recall questions</p>
-                  </div>
-                  <span className="rounded-full bg-brand-gold-soft px-2.5 py-1 text-xs font-semibold text-brand-gold-dark">
-                    1/2 sets complete
-                  </span>
-                </div>
-
-                <div className="space-y-3 text-xs">
-                  <div className="rounded-xl border border-border p-4">
-                    <p className="font-bold text-text-heading">
-                      Q1: Which of the following best represents information rather than raw data?
-                    </p>
-                    <div className="mt-2.5 space-y-1.5">
-                      <label className="flex items-center gap-2 rounded-lg bg-secondary/60 p-2 cursor-pointer hover:bg-secondary">
-                        <input type="radio" name="drill1" className="text-brand" />
-                        <span>A list of disconnected floating numbers: 24, 88, 12</span>
-                      </label>
-                      <label className="flex items-center gap-2 rounded-lg bg-emerald-50 text-emerald-900 border border-emerald-200 p-2 cursor-pointer font-semibold">
-                        <input type="radio" name="drill1" defaultChecked className="text-brand" />
-                        <span>"Average class score in CS3401 is 78%" (Correct)</span>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </motion.div>
-      )}
 
       {/* TAB 3: PRACTICE */}
       {activeTab === 'Practice' && (
@@ -1782,47 +1101,6 @@ export function CourseDetails() {
         </motion.div>
       )}
 
-      {/* Interactive Material Viewer Modal */}
-      <AnimatePresence>
-        {materialModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-xs" onClick={() => setMaterialModal(null)} />
-            <motion.div
-              initial={{ scale: 0.94, y: 15 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.94, opacity: 0 }}
-              className="relative z-10 w-full max-w-lg rounded-2xl border border-border bg-card p-6 shadow-2xl"
-            >
-              <div className="flex items-center justify-between border-b border-border pb-3">
-                <div>
-                  <span className="rounded-full bg-secondary px-2.5 py-0.5 text-[11px] font-bold text-brand">
-                    {materialModal.type}
-                  </span>
-                  <h3 className="mt-1 text-sm font-bold text-text-heading">{materialModal.title}</h3>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setMaterialModal(null)}
-                  className="rounded-lg p-1 text-muted-foreground hover:bg-secondary"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              <div className="my-5 max-h-72 overflow-y-auto rounded-xl border border-border bg-secondary/50 p-4 text-xs leading-relaxed text-foreground whitespace-pre-line">
-                {materialModal.content}
-              </div>
-
-              <div className="flex justify-end gap-2 border-t border-border pt-3">
-                <Button variant="secondary" onClick={() => setMaterialModal(null)}>
-                  Close
-                </Button>
-                <Button onClick={() => setMaterialModal(null)}>Mark as studied</Button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
 
       {/* Interactive Flashcard Modal */}
       <AnimatePresence>
