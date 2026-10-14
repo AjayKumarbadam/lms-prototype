@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Users, CheckCircle2, RotateCcw, ArrowRight } from 'lucide-react'
 import { useLms } from '../../store/LmsStore'
 import { Badge, Button, Card, Empty, Field, Input, Modal, Page, PageHeader, Select, StatCard, Textarea } from '../../components/ui'
 import { formatDate, uid } from '../../lib/utils'
@@ -383,8 +384,16 @@ export function TakeQuiz() {
   const [answers, setAnswers] = useState<Record<string, unknown>>({})
   const [phase, setPhase] = useState<'take' | 'review' | 'done'>('take')
   const [confirm, setConfirm] = useState(false)
+  const questions = useMemo(() => {
+    if (!quiz) return []
+    const list = quiz.questionIds.map((id) => state.questions.find((q) => q.id === id)).filter(Boolean) as Question[]
+    if (quiz.randomize) {
+      return [...list].sort((a, b) => a.id.localeCompare(b.id) * -1)
+    }
+    return list
+  }, [quiz, state.questions])
+
   if (!quiz) return <Page><Empty title="Quiz not found" body="" /></Page>
-  const questions = quiz.questionIds.map((id) => state.questions.find((q) => q.id === id)).filter(Boolean) as Question[]
   const q = questions[i]
   const attempt = state.attempts.find((a) => a.quizId === quiz.id && a.studentId === state.currentUserId)
 
@@ -485,30 +494,425 @@ export function AssessmentsHome() {
   )
 }
 
+interface PeerReviewItem {
+  id: string
+  assignmentId: string
+  reviewerId: string
+  reviewerName: string
+  revieweeId: string
+  revieweeName: string
+  rubricScores: {
+    correctness: number // 1-5
+    clarity: number // 1-5
+  }
+  feedback: string
+  status: 'Pending' | 'Completed'
+}
+
+const INITIAL_PEER_REVIEWS: PeerReviewItem[] = [
+  {
+    id: 'pr-1',
+    assignmentId: 'a1',
+    reviewerId: 'u-stu-2',
+    reviewerName: 'Sneha Reddy',
+    revieweeId: 'u-stu-1',
+    revieweeName: 'Aarav Sharma',
+    rubricScores: { correctness: 4, clarity: 5 },
+    feedback: 'Very thorough ER diagram and schema normalization. Query 3 could use an index hint.',
+    status: 'Completed',
+  },
+  {
+    id: 'pr-2',
+    assignmentId: 'a1',
+    reviewerId: 'u-stu-3',
+    reviewerName: 'Kiran Kumar Varma',
+    revieweeId: 'u-stu-1',
+    revieweeName: 'Aarav Sharma',
+    rubricScores: { correctness: 5, clarity: 4 },
+    feedback: 'Clear assumptions and good transaction ACID breakdown.',
+    status: 'Completed',
+  },
+  {
+    id: 'pr-3',
+    assignmentId: 'a1',
+    reviewerId: 'u-stu-1',
+    reviewerName: 'Aarav Sharma',
+    revieweeId: 'u-stu-2',
+    revieweeName: 'Sneha Reddy',
+    rubricScores: { correctness: 3, clarity: 4 },
+    feedback: 'Solid structure. Needs more detail on 3NF versus BCNF losslessness.',
+    status: 'Completed',
+  },
+]
+
 export function WorkflowPage() {
   const { state, dispatch, toast } = useLms()
-  const a = state.assignments[0]
-  const stages = ['draft', 'published', 'submitted', 'evaluated', 'released']
+  const [selectedAssignmentId, setSelectedAssignmentId] = useState(state.assignments[0]?.id ?? '')
+  const [peerReviews, setPeerReviews] = useState<PeerReviewItem[]>(INITIAL_PEER_REVIEWS)
+
+  // Active Peer Review Dialog State
+  const [activeReviewModal, setActiveReviewModal] = useState<PeerReviewItem | null>(null)
+  const [modalCorrectness, setModalCorrectness] = useState(4)
+  const [modalClarity, setModalClarity] = useState(4)
+  const [modalFeedback, setModalFeedback] = useState('')
+
+  const assignment = state.assignments.find((a) => a.id === selectedAssignmentId) || state.assignments[0]
+
+  const stages = [
+    { key: 'draft', label: '1. Draft' },
+    { key: 'published', label: '2. Published' },
+    { key: 'submitted', label: '3. Submissions' },
+    { key: 'peer', label: '4. Peer Review' },
+    { key: 'evaluated', label: '5. Faculty Grading' },
+    { key: 'released', label: '6. Released' },
+  ]
+
+  // Filter submissions by current assignment
+  const assignmentSubs = state.submissions.filter((s) => s.assignmentId === assignment?.id)
+  const returnedSubs = assignmentSubs.filter((s) => s.status === 'returned')
+
+  const handleAdvanceStage = (nextStatus: Assignment['status']) => {
+    if (!assignment) return
+    dispatch({
+      type: 'UPSERT_ASSIGNMENT',
+      assignment: { ...assignment, status: nextStatus },
+    })
+    toast('success', `Assignment "${assignment.title}" moved to ${nextStatus.toUpperCase()} stage`)
+  }
+
+  const handleApproveResubmission = (subId: string) => {
+    const sub = state.submissions.find((s) => s.id === subId)
+    if (!sub) return
+    dispatch({
+      type: 'UPSERT_SUBMISSION',
+      submission: { ...sub, status: 'submitted', submittedAt: new Date().toISOString() },
+    })
+    toast('success', 'Resubmission approved and moved to faculty grading queue')
+  }
+
+  const handleSavePeerReview = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!activeReviewModal) return
+
+    setPeerReviews((prev) =>
+      prev.map((r) =>
+        r.id === activeReviewModal.id
+          ? {
+              ...r,
+              status: 'Completed',
+              rubricScores: { correctness: modalCorrectness, clarity: modalClarity },
+              feedback: modalFeedback,
+            }
+          : r
+      )
+    )
+
+    toast('success', 'Peer review rubric evaluation saved!')
+    setActiveReviewModal(null)
+  }
+
   return (
     <Page>
-      <PageHeader title="Assessment workflow" description="Draft → Published → Submitted → Evaluated → Released. Peer assessment and advanced grading are prototype labels only." />
-      <Card>
-        <div className="mb-6 flex flex-wrap gap-2">
-          {stages.map((s, i) => (
-            <div key={s} className="flex items-center gap-2">
-              <span className="rounded-full bg-burgundy px-3 py-1 text-xs font-semibold capitalize text-white">{s}</span>
-              {i < stages.length - 1 ? <span className="text-muted">→</span> : null}
-            </div>
-          ))}
-        </div>
-        {a ? (
-          <div className="space-y-2">
-            <p className="font-medium text-navy">{a.title} · <Badge status={a.status} /></p>
-            {a.status === 'draft' ? <Button onClick={() => { dispatch({ type: 'UPSERT_ASSIGNMENT', assignment: { ...a, status: 'published' } }); toast('success', 'Moved to Published') }}>Publish sample assignment</Button> : null}
-            <p className="text-sm text-muted">Peer assessment: simulated. Advanced grading schemes: simulated.</p>
+      <PageHeader
+        title="Assessment Lifecycle, Peer Reviews & Grading Workflows"
+        description="Comprehensive evaluation governance: progression pipelines, double-blind peer assessment with rubric scoring, resubmissions handling, and final gradebook releases."
+        actions={
+          <div className="flex items-center gap-2">
+            <Link to="/lms/assignments/list">
+              <Button variant="secondary">All Assignments</Button>
+            </Link>
           </div>
-        ) : null}
-      </Card>
+        }
+      />
+
+      <div className="space-y-6">
+        {/* 1. Assessment Selector & Visual Pipeline Stage Tracker */}
+        <Card className="space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <label className="block text-xs font-bold text-text-heading mb-1">Select Active Assessment</label>
+              <Select
+                value={selectedAssignmentId}
+                onChange={(e) => setSelectedAssignmentId(e.target.value)}
+                className="min-w-[280px]"
+              >
+                {state.assignments.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.title} ({state.courses.find((c) => c.id === a.courseId)?.code})
+                  </option>
+                ))}
+              </Select>
+            </div>
+
+            {assignment && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Current Status:</span>
+                <Badge status={assignment.status} />
+              </div>
+            )}
+          </div>
+
+          {/* Interactive Pipeline Stages */}
+          <div className="rounded-2xl border border-border bg-secondary/30 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              {stages.map((stage, idx) => {
+                const isCurrent =
+                  (stage.key === 'draft' && assignment?.status === 'draft') ||
+                  (stage.key === 'published' && assignment?.status === 'published') ||
+                  (stage.key === 'peer' && assignment?.status === 'published' && peerReviews.length > 0) ||
+                  (stage.key === 'released' && assignment?.status === 'closed')
+
+                return (
+                  <div key={stage.key} className="flex items-center gap-2">
+                    <div
+                      className={`flex items-center gap-1.5 rounded-full px-3.5 py-1 text-xs font-bold transition ${
+                        isCurrent
+                          ? 'bg-brand text-white shadow-xs ring-2 ring-brand-gold/40'
+                          : 'bg-white border border-border text-foreground hover:bg-secondary'
+                      }`}
+                    >
+                      {isCurrent && <CheckCircle2 size={13} className="text-brand-gold" />}
+                      <span>{stage.label}</span>
+                    </div>
+                    {idx < stages.length - 1 && (
+                      <ArrowRight size={13} className="text-muted-foreground hidden md:block" />
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Workflow Action Bar */}
+          {assignment && (
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-border">
+              <span className="text-xs text-muted-foreground">
+                Max Marks: {assignment.maxMarks} · Late Policy: {assignment.latePolicy}
+              </span>
+              <div className="flex items-center gap-2">
+                {assignment.status === 'draft' && (
+                  <Button
+                    variant="primary"
+                    onClick={() => handleAdvanceStage('published')}
+                    className="bg-brand text-white"
+                  >
+                    Publish Assignment to Students
+                  </Button>
+                )}
+                {assignment.status === 'published' && (
+                  <>
+                    <Button
+                      variant="secondary"
+                      onClick={() => toast('info', 'Peer review phase is active for all submitted works.')}
+                    >
+                      Enforce Peer Review Deadlines
+                    </Button>
+                    <Button
+                      variant="primary"
+                      onClick={() => handleAdvanceStage('closed')}
+                      className="bg-brand text-white"
+                    >
+                      Close Submissions & Finalize Grades
+                    </Button>
+                  </>
+                )}
+                {assignment.status === 'closed' && (
+                  <Button
+                    variant="secondary"
+                    onClick={() => handleAdvanceStage('published')}
+                  >
+                    Reopen for Late Submissions
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+        </Card>
+
+        {/* 2-Column Grid: Peer Assessment Matrix & Resubmission Management */}
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Peer Assessment Engine */}
+          <Card className="space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="grid h-9 w-9 place-items-center rounded-xl bg-brand text-white shadow-2xs">
+                  <Users size={18} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-text-heading text-base">Peer Assessment & Rubrics</h3>
+                  <p className="text-xs text-muted-foreground">Double-blind student peer evaluation with rubric scoring</p>
+                </div>
+              </div>
+              <span className="rounded-full bg-brand-soft px-2.5 py-0.5 text-xs font-bold text-brand uppercase border border-border">
+                {peerReviews.length} Assigned
+              </span>
+            </div>
+
+            <div className="space-y-3">
+              {peerReviews.map((pr) => (
+                <div
+                  key={pr.id}
+                  className="rounded-xl border border-border bg-card p-3.5 space-y-2 hover:border-brand/40 transition shadow-2xs"
+                >
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-text-heading">
+                      Reviewer: {pr.reviewerName} → Reviewee: {pr.revieweeName}
+                    </span>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                        pr.status === 'Completed'
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          : 'bg-amber-50 text-amber-700 border border-amber-200'
+                      }`}
+                    >
+                      {pr.status}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-[11px] text-muted-foreground bg-secondary/30 p-2 rounded-lg">
+                    <span>Accuracy Rubric: {pr.rubricScores.correctness}/5</span>
+                    <span>Clarity & Docs: {pr.rubricScores.clarity}/5</span>
+                  </div>
+
+                  <p className="text-xs text-foreground italic">&quot;{pr.feedback}&quot;</p>
+
+                  <div className="flex justify-end pt-1">
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        setActiveReviewModal(pr)
+                        setModalCorrectness(pr.rubricScores.correctness)
+                        setModalClarity(pr.rubricScores.clarity)
+                        setModalFeedback(pr.feedback)
+                      }}
+                      className="text-xs py-1 px-3"
+                    >
+                      Audit / Edit Peer Score
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          {/* Resubmissions & Remediation Governance */}
+          <Card className="space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="grid h-9 w-9 place-items-center rounded-xl bg-secondary text-primary border border-border shadow-2xs">
+                  <RotateCcw size={18} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-text-heading text-base">Resubmissions Management</h3>
+                  <p className="text-xs text-muted-foreground">Handle returned work, second attempts and extensions</p>
+                </div>
+              </div>
+              <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-bold text-text-heading border border-border">
+                {returnedSubs.length} Pending
+              </span>
+            </div>
+
+            {returnedSubs.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-border p-8 text-center text-xs text-muted-foreground">
+                <CheckCircle2 size={24} className="mx-auto text-emerald-600 mb-2" />
+                No assignments currently returned for resubmission. Faculty evaluations are up to date.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {returnedSubs.map((sub) => {
+                  const stu = state.people.find((p) => p.id === sub.studentId)
+                  return (
+                    <div
+                      key={sub.id}
+                      className="rounded-xl border border-amber-200 bg-amber-50/40 p-3.5 space-y-2 text-xs"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-text-heading">{stu?.name}</span>
+                        <span className="rounded bg-rose-100 text-rose-800 px-2 py-0.5 text-[10px] font-bold">
+                          Returned by Faculty
+                        </span>
+                      </div>
+                      <p className="text-muted-foreground">
+                        Faculty Feedback: &quot;{sub.feedback || 'Revision requested prior to final marking'}&quot;
+                      </p>
+                      <div className="flex justify-end gap-2 pt-1">
+                        <Button
+                          variant="primary"
+                          onClick={() => handleApproveResubmission(sub.id)}
+                          className="text-xs py-1 px-3 bg-brand text-white"
+                        >
+                          Approve Revised Submission
+                        </Button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </Card>
+        </div>
+      </div>
+
+      {/* MODAL: EDIT PEER REVIEW */}
+      <Modal
+        open={!!activeReviewModal}
+        title={`Audit Peer Review · ${activeReviewModal?.reviewerName}`}
+        onClose={() => setActiveReviewModal(null)}
+      >
+        {activeReviewModal && (
+          <form onSubmit={handleSavePeerReview} className="space-y-4 text-xs">
+            <div>
+              <label className="block font-bold text-text-heading mb-1">
+                Technical Correctness & Code Quality (1 to 5)
+              </label>
+              <input
+                type="range"
+                min={1}
+                max={5}
+                value={modalCorrectness}
+                onChange={(e) => setModalCorrectness(Number(e.target.value))}
+                className="w-full accent-brand"
+              />
+              <span className="font-bold text-brand">{modalCorrectness} / 5 Stars</span>
+            </div>
+
+            <div>
+              <label className="block font-bold text-text-heading mb-1">
+                Clarity, Architecture & Explanation (1 to 5)
+              </label>
+              <input
+                type="range"
+                min={1}
+                max={5}
+                value={modalClarity}
+                onChange={(e) => setModalClarity(Number(e.target.value))}
+                className="w-full accent-brand"
+              />
+              <span className="font-bold text-brand">{modalClarity} / 5 Stars</span>
+            </div>
+
+            <div>
+              <label className="block font-bold text-text-heading mb-1">Peer Feedback Notes</label>
+              <Textarea
+                rows={3}
+                value={modalFeedback}
+                onChange={(e) => setModalFeedback(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="secondary" type="button" onClick={() => setActiveReviewModal(null)}>
+                Cancel
+              </Button>
+              <Button variant="primary" type="submit" className="bg-brand text-white">
+                Save Review Scores
+              </Button>
+            </div>
+          </form>
+        )}
+      </Modal>
     </Page>
   )
 }
+
