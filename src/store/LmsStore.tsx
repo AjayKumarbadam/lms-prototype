@@ -24,6 +24,8 @@ type Action =
   | { type: 'UPSERT_COURSE'; course: Course }
   | { type: 'CLONE_COURSE'; id: string }
   | { type: 'SET_COURSE_STATUS'; id: string; status: Course['status'] }
+  | { type: 'SOFT_DELETE_COURSE'; id: string; studentId?: string }
+  | { type: 'RESTORE_COURSE'; id: string; studentId?: string }
   | { type: 'SET_TOPICS'; courseId: string; topics: Course['topics'] }
   | { type: 'SET_PARTICIPANTS'; courseId: string; studentIds: string[]; facultyIds: string[]; taIds: string[] }
   | { type: 'UPSERT_MATERIAL'; material: Material }
@@ -86,6 +88,37 @@ function reducer(state: LmsState, action: Action): LmsState {
       return {
         ...state,
         courses: state.courses.map((c) => (c.id === action.id ? { ...c, status: action.status } : c)),
+      }
+    case 'SOFT_DELETE_COURSE':
+      return {
+        ...state,
+        courses: state.courses.map((c) => {
+          if (c.id !== action.id) return c
+          if (action.studentId) {
+            const currentList = c.softDeletedStudentIds || []
+            return {
+              ...c,
+              softDeletedStudentIds: currentList.includes(action.studentId)
+                ? currentList
+                : [...currentList, action.studentId],
+            }
+          }
+          return { ...c, isSoftDeleted: true }
+        }),
+      }
+    case 'RESTORE_COURSE':
+      return {
+        ...state,
+        courses: state.courses.map((c) => {
+          if (c.id !== action.id) return c
+          if (action.studentId) {
+            return {
+              ...c,
+              softDeletedStudentIds: (c.softDeletedStudentIds || []).filter((id) => id !== action.studentId),
+            }
+          }
+          return { ...c, isSoftDeleted: false }
+        }),
       }
     case 'SET_TOPICS':
       return {

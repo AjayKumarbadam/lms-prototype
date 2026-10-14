@@ -127,6 +127,8 @@ export function AppShell() {
   const [editSemester, setEditSemester] = useState('')
   const [editBatch, setEditBatch] = useState('')
   const [editSection, setEditSection] = useState('')
+  const [editAcademicYear, setEditAcademicYear] = useState('')
+  const [editRegulation, setEditRegulation] = useState('')
   const [editRole, setEditRole] = useState<Role>('student')
 
   const openProfileModal = () => {
@@ -139,6 +141,8 @@ export function AppShell() {
       setEditSemester(me?.semester ?? 'Semester 6 2024–2026')
       setEditBatch(me?.batch ?? '2021–2025')
       setEditSection(me?.section ?? 'B')
+      setEditAcademicYear(me?.academicYear ?? '2024–2025')
+      setEditRegulation(me?.regulation ?? 'R20')
     } else if (state.role === 'faculty') {
       setEditStudentId(me?.studentId ?? 'FAC-2041')
       setEditTitle(me?.title ?? 'Associate Professor & Research Lead')
@@ -146,6 +150,8 @@ export function AppShell() {
       setEditSemester('')
       setEditBatch('')
       setEditSection('')
+      setEditAcademicYear('')
+      setEditRegulation('')
     } else {
       setEditStudentId(me?.studentId ?? 'ADM-001')
       setEditTitle(me?.title ?? 'Chief Academic Administrator')
@@ -153,6 +159,8 @@ export function AppShell() {
       setEditSemester('')
       setEditBatch('')
       setEditSection('')
+      setEditAcademicYear('')
+      setEditRegulation('')
     }
     setEditRole((me?.role as Role) ?? state.role)
     setProfile(true)
@@ -176,6 +184,8 @@ export function AppShell() {
         semester: editSemester.trim(),
         batch: editBatch.trim(),
         section: editSection.trim(),
+        academicYear: editAcademicYear.trim(),
+        regulation: editRegulation.trim(),
         role: editRole,
       },
     })
@@ -530,7 +540,7 @@ export function AppShell() {
               </div>
 
               {/* Student Credentials Pills */}
-              <div className="relative mt-3.5 grid grid-cols-4 gap-1.5 text-center text-xs">
+              <div className="relative mt-3.5 grid grid-cols-3 sm:grid-cols-6 gap-1.5 text-center text-xs">
                 <div className="rounded-xl border border-white/20 bg-white/10 px-2 py-1.5 backdrop-blur-xs">
                   <span className="block text-[8px] font-bold tracking-wider text-[#C9A227] uppercase">
                     Roll No
@@ -561,6 +571,22 @@ export function AppShell() {
                   </span>
                   <span className="text-[11px] font-bold text-white truncate block mt-0.5">
                     {editSection || 'B'}
+                  </span>
+                </div>
+                <div className="rounded-xl border border-white/20 bg-white/10 px-2 py-1.5 backdrop-blur-xs">
+                  <span className="block text-[8px] font-bold tracking-wider text-[#C9A227] uppercase">
+                    Academic Year
+                  </span>
+                  <span className="text-[11px] font-bold text-white truncate block mt-0.5">
+                    {editAcademicYear || '2024–2025'}
+                  </span>
+                </div>
+                <div className="rounded-xl border border-white/20 bg-white/10 px-2 py-1.5 backdrop-blur-xs">
+                  <span className="block text-[8px] font-bold tracking-wider text-[#C9A227] uppercase">
+                    Regulation
+                  </span>
+                  <span className="text-[11px] font-bold text-amber-300 truncate block mt-0.5">
+                    {editRegulation || 'R20'}
                   </span>
                 </div>
               </div>
@@ -786,6 +812,28 @@ export function AppShell() {
                     onChange={(e) => setEditDepartment(e.target.value)}
                     className="w-full rounded-xl border border-border bg-white px-3 py-2 text-xs font-medium text-foreground transition focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
                     placeholder="e.g. Computer Science & Engineering"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-text-heading mb-1">Academic Year</label>
+                  <input
+                    type="text"
+                    value={editAcademicYear}
+                    onChange={(e) => setEditAcademicYear(e.target.value)}
+                    className="w-full rounded-xl border border-border bg-white px-3 py-2 text-xs font-medium text-foreground transition focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                    placeholder="e.g. 2024–2025"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-text-heading mb-1">Regulation</label>
+                  <input
+                    type="text"
+                    value={editRegulation}
+                    onChange={(e) => setEditRegulation(e.target.value)}
+                    className="w-full rounded-xl border border-border bg-white px-3 py-2 text-xs font-medium text-foreground transition focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                    placeholder="e.g. R20 (Autonomous)"
                   />
                 </div>
               </div>

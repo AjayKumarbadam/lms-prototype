@@ -18,11 +18,14 @@ import {
   Check,
   ShieldCheck,
   Compass,
+  FileText,
+  Download,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
 import { useLms } from '../../store/LmsStore'
 import { Button, Card, Empty, Page } from '../../components/ui'
 import { formatDate } from '../../lib/utils'
+import { getCourse5UnitsSyllabus } from '../../data/courseSyllabus'
 
 /**
  * ==========================================================================================
@@ -230,7 +233,7 @@ const SYLLABUS_CHAPTERS: SyllabusChapter[] = [
 
 export function CourseDetails() {
   const { courseId } = useParams()
-  const { state } = useLms()
+  const { state, toast } = useLms()
   const nav = useNavigate()
 
   // Primary navigation tabs: Dashboard, Study, Practice, Assessments
@@ -244,6 +247,12 @@ export function CourseDetails() {
   const [cardIndex, setCardIndex] = useState(0)
   const [showAnswer, setShowAnswer] = useState(false)
   const [hoveredCell, setHoveredCell] = useState<HeatmapCell | null>(null)
+  const [selectedHeatmapCell, setSelectedHeatmapCell] = useState<HeatmapCell | null>(null)
+
+  // 5 Units Syllabus state in Course Dashboard
+  const [expandedUnits, setExpandedUnits] = useState<number[]>([1, 2])
+  const [syllabusUnitFilter, setSyllabusUnitFilter] = useState<'all' | number>('all')
+  const [syllabusSearch, setSyllabusSearch] = useState('')
 
   // Study Tab States
   const [selectedTopicId, setSelectedTopicId] = useState('t-1')
@@ -298,6 +307,10 @@ export function CourseDetails() {
   const currentSyllabusTopic =
     SYLLABUS_CHAPTERS.flatMap((c) => c.topics).find((t) => t.id === selectedTopicId) ||
     SYLLABUS_CHAPTERS[0].topics[0]
+
+  // 5 Units Syllabus Data for the course
+  const syllabus5Units = getCourse5UnitsSyllabus(course.id, course.title, course.code)
+  const activeHeatmapCell = selectedHeatmapCell || hoveredCell
 
   return (
     <div className="space-y-6 pb-16">
@@ -487,13 +500,271 @@ export function CourseDetails() {
             </div>
           </div>
 
-          {/* Row 3: Topic Heat Map */}
+          {/* Row 3: Comprehensive 5-Unit Course Syllabus */}
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-2xs">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between border-b border-border pb-4">
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full bg-brand/10 border border-brand/20 px-2.5 py-0.5 text-[11px] font-bold text-brand uppercase tracking-wider">
+                    Official 5-Unit Syllabus
+                  </span>
+                  <span className="rounded-full bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-700">
+                    Regulation R20 (Autonomous)
+                  </span>
+                  <span className="text-xs text-muted-foreground font-semibold">
+                    {course.code} · {course.title}
+                  </span>
+                </div>
+                <h3 className="mt-1.5 text-base font-bold text-text-heading">
+                  Course Syllabus & Unit Curriculum
+                </h3>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Complete prescribed 5-unit curriculum with lecture hours, topics breakdown, key algorithms, and learning outcomes.
+                </p>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (expandedUnits.length === 5) {
+                      setExpandedUnits([])
+                    } else {
+                      setExpandedUnits([1, 2, 3, 4, 5])
+                    }
+                  }}
+                  className="rounded-xl border border-border bg-secondary/60 px-3 py-1.5 text-xs font-semibold text-text-heading hover:bg-secondary transition active:scale-95 cursor-pointer"
+                >
+                  {expandedUnits.length === 5 ? 'Collapse All Units' : 'Expand All 5 Units'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => toast('success', `Exporting 5-Unit Syllabus PDF for ${course.code} — ${course.title} (Regulation R20)`)}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-white px-3 py-1.5 text-xs font-semibold text-brand hover:bg-brand-soft hover:border-brand/40 transition active:scale-95 shadow-2xs cursor-pointer"
+                >
+                  <Download size={14} />
+                  <span>Download Syllabus</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Filter Pills: All Units / Unit 1..5 */}
+            <div className="my-3.5 flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-muted-foreground font-semibold mr-1">Filter Unit:</span>
+                <button
+                  type="button"
+                  onClick={() => setSyllabusUnitFilter('all')}
+                  className={`rounded-full px-3 py-1 font-semibold text-xs transition cursor-pointer ${
+                    syllabusUnitFilter === 'all'
+                      ? 'bg-brand text-white shadow-xs'
+                      : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
+                  }`}
+                >
+                  All 5 Units
+                </button>
+                {syllabus5Units.map((u) => (
+                  <button
+                    key={u.unitNumber}
+                    type="button"
+                    onClick={() => setSyllabusUnitFilter(u.unitNumber)}
+                    className={`rounded-full px-2.5 py-1 font-semibold text-xs transition cursor-pointer ${
+                      syllabusUnitFilter === u.unitNumber
+                        ? 'bg-brand text-white shadow-xs'
+                        : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
+                    }`}
+                  >
+                    {u.unitRoman}
+                  </button>
+                ))}
+              </div>
+
+              {/* Syllabus Search */}
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-2.5 top-2 text-muted-foreground" size={14} />
+                <input
+                  type="text"
+                  value={syllabusSearch}
+                  onChange={(e) => setSyllabusSearch(e.target.value)}
+                  placeholder="Search topics, algorithms..."
+                  className="w-full rounded-xl border border-border bg-secondary/40 py-1.5 pl-8 pr-2.5 text-xs text-foreground placeholder:text-muted-foreground transition focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                />
+              </div>
+            </div>
+
+            {/* Units List */}
+            <div className="space-y-3">
+              {syllabus5Units
+                .filter((u) => syllabusUnitFilter === 'all' || syllabusUnitFilter === u.unitNumber)
+                .filter((u) => {
+                  if (!syllabusSearch.trim()) return true
+                  const q = syllabusSearch.toLowerCase()
+                  return (
+                    u.title.toLowerCase().includes(q) ||
+                    u.topics.some((t) => t.toLowerCase().includes(q)) ||
+                    u.keyAlgorithmsOrMethods.some((a) => a.toLowerCase().includes(q)) ||
+                    u.learningOutcomes.toLowerCase().includes(q)
+                  )
+                })
+                .map((unit) => {
+                  const isExpanded = expandedUnits.includes(unit.unitNumber)
+                  const toggleExpand = () => {
+                    setExpandedUnits((prev) =>
+                      prev.includes(unit.unitNumber)
+                        ? prev.filter((n) => n !== unit.unitNumber)
+                        : [...prev, unit.unitNumber]
+                    )
+                  }
+
+                  return (
+                    <div
+                      key={unit.unitNumber}
+                      className="rounded-xl border border-border bg-card overflow-hidden transition shadow-2xs hover:border-brand/30"
+                    >
+                      {/* Unit Header Bar */}
+                      <button
+                        type="button"
+                        onClick={toggleExpand}
+                        className="w-full p-4 flex items-center justify-between text-left transition hover:bg-secondary/40 cursor-pointer"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span className="grid h-8 w-18 shrink-0 place-items-center rounded-lg bg-brand/10 text-brand font-bold text-xs border border-brand/20">
+                            {unit.unitRoman}
+                          </span>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-bold text-sm text-text-heading truncate">
+                                {unit.title}
+                              </h4>
+                              <span
+                                className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                                  unit.status === 'Completed'
+                                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                                    : unit.status === 'In Progress'
+                                    ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                                    : 'bg-secondary text-muted-foreground border border-border'
+                                }`}
+                              >
+                                {unit.status} ({unit.progressPct}%)
+                              </span>
+                            </div>
+                            <p className="mt-0.5 text-xs text-muted-foreground">
+                              {unit.hours} Lecture Hours · {unit.weightage}% Exam Weightage · {unit.topics.length} Subtopics
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0 ml-3">
+                          <span className="text-xs font-semibold text-brand hidden sm:inline">
+                            {isExpanded ? 'Hide Details' : 'View Topics'}
+                          </span>
+                          <div
+                            className={`p-1 rounded-lg text-muted-foreground transition-transform ${
+                              isExpanded ? 'rotate-180' : ''
+                            }`}
+                          >
+                            <ChevronDown size={16} />
+                          </div>
+                        </div>
+                      </button>
+
+                      {/* Expanded Unit Details */}
+                      {isExpanded && (
+                        <div className="border-t border-border bg-secondary/20 p-4 space-y-3.5 text-xs">
+                          {/* Unit Topics Breakdown */}
+                          <div>
+                            <h5 className="font-bold text-text-heading uppercase tracking-wider text-[11px] mb-2 flex items-center gap-1.5">
+                              <FileText size={13} className="text-brand" />
+                              <span>Detailed Topics Curriculum:</span>
+                            </h5>
+                            <div className="grid gap-1.5 sm:grid-cols-2">
+                              {unit.topics.map((topic, i) => (
+                                <div
+                                  key={i}
+                                  className="flex items-start gap-2 rounded-lg border border-border/70 bg-card p-2.5 text-xs text-foreground"
+                                >
+                                  <span className="mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full bg-brand-soft text-[10px] font-bold text-brand">
+                                    {i + 1}
+                                  </span>
+                                  <span className="leading-snug">{topic}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Key Algorithms / Primitives */}
+                          {unit.keyAlgorithmsOrMethods.length > 0 && (
+                            <div>
+                              <h5 className="font-bold text-text-heading text-[11px] uppercase tracking-wider mb-1.5">
+                                Prescribed Algorithms & Methods:
+                              </h5>
+                              <div className="flex flex-wrap gap-1.5">
+                                {unit.keyAlgorithmsOrMethods.map((algo, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="rounded-lg border border-brand/20 bg-brand/5 px-2.5 py-1 text-[11px] font-semibold text-brand"
+                                  >
+                                    ⚙️ {algo}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Learning Outcomes */}
+                          <div className="rounded-xl border border-emerald-500/20 bg-emerald-50/40 p-3 text-emerald-900">
+                            <span className="font-bold text-[11px] uppercase tracking-wider block text-emerald-800">
+                              Target Learning Outcome (Course Outcome CO{unit.unitNumber}):
+                            </span>
+                            <p className="mt-1 text-xs leading-relaxed font-medium">
+                              {unit.learningOutcomes}
+                            </p>
+                          </div>
+
+                          {/* Prescribed Reference */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1 border-t border-border/60">
+                            <div className="text-[11px] text-muted-foreground">
+                              <span className="font-bold text-text-heading">Prescribed Reading: </span>
+                              <span>{unit.textbookReference}</span>
+                            </div>
+
+                            <div className="flex items-center gap-2 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setActiveTab('Study')
+                                  setStudySubTab('Materials')
+                                }}
+                                className="rounded-lg bg-brand hover:bg-brand-dark px-3 py-1.5 text-xs font-bold text-white transition active:scale-95 cursor-pointer"
+                              >
+                                Study Unit Materials
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setCustomPracticeModal(true)}
+                                className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-text-heading hover:bg-secondary transition active:scale-95 cursor-pointer"
+                              >
+                                Practice Drill
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+            </div>
+          </div>
+
+          {/* Row 4: Topic Heat Map — With Fixed-Height Status Bar & Shaking-Free Click Animation */}
           <div className="rounded-2xl border border-border bg-card p-5 shadow-2xs">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <h3 className="text-base font-bold text-text-heading">Topic heat map</h3>
                 <p className="mt-0.5 text-xs text-muted-foreground">
-                  Attempt status and score band per topic. Hover a cell to see the topic and score.
+                  Attempt status and score band per topic. Click any cell to lock details, or hover to preview.
                 </p>
                 <div className="mt-2.5 flex flex-wrap items-center gap-2 text-[11px]">
                   <span className="rounded-full bg-secondary border border-border px-2.5 py-0.5 font-semibold text-muted-foreground">
@@ -534,12 +805,60 @@ export function CourseDetails() {
               </div>
             </div>
 
-            {hoveredCell && (
-              <div className="mt-3 rounded-lg bg-text-heading px-3 py-1.5 text-xs font-medium text-white shadow-md">
-                Topic: <strong>{hoveredCell.name}</strong> · Score:{' '}
-                {hoveredCell.score != null ? `${hoveredCell.score}%` : 'Not attempted'} ({hoveredCell.status})
-              </div>
-            )}
+            {/* Stable Topic Detail Banner — Fixed height prevents vertical layout shift & eliminates shaking completely */}
+            <div className="mt-4 min-h-[46px] rounded-xl border border-border/80 bg-secondary/50 px-3.5 py-2 flex items-center justify-between transition-all">
+              {activeHeatmapCell ? (
+                <div className="flex flex-wrap items-center justify-between gap-2 w-full text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-text-heading">Topic:</span>
+                    <span className="font-semibold text-brand">{activeHeatmapCell.name}</span>
+                    <span className="text-muted-foreground">·</span>
+                    <span className="text-muted-foreground">Score:</span>
+                    <span className="font-bold text-text-heading">
+                      {activeHeatmapCell.score != null ? `${activeHeatmapCell.score}%` : 'Not attempted'}
+                    </span>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                        activeHeatmapCell.status === 'strong'
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : activeHeatmapCell.status === 'developing'
+                          ? 'bg-amber-100 text-amber-800'
+                          : activeHeatmapCell.status === 'needs work'
+                          ? 'bg-rose-100 text-rose-800'
+                          : 'bg-secondary text-muted-foreground'
+                      }`}
+                    >
+                      {activeHeatmapCell.status}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {selectedHeatmapCell && (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedHeatmapCell(null)}
+                        className="text-[11px] font-semibold text-muted-foreground hover:text-foreground transition underline cursor-pointer"
+                      >
+                        Reset selection
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('Practice')}
+                      className="inline-flex items-center gap-1 rounded-lg bg-brand hover:bg-brand-dark px-2.5 py-1 text-[11px] font-bold text-white transition active:scale-95 cursor-pointer"
+                    >
+                      <span>Practice topic</span>
+                      <ChevronRight size={12} />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Compass size={14} className="text-brand shrink-0" />
+                  <span>Click any cell below to lock topic details, or hover to preview without jumping</span>
+                </div>
+              )}
+            </div>
 
             <div className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {HEATMAP_DATA.map((cat) => (
@@ -563,13 +882,26 @@ export function CourseDetails() {
                         unattempted: 'bg-border/60 hover:ring-2 hover:ring-border',
                       }
 
+                      const isSelected = selectedHeatmapCell?.id === cell.id
+                      const isHovered = hoveredCell?.id === cell.id
+
                       return (
-                        <div
+                        <button
+                          type="button"
                           key={cell.id}
+                          onClick={() => setSelectedHeatmapCell((prev) => (prev?.id === cell.id ? null : cell))}
                           onMouseEnter={() => setHoveredCell(cell)}
                           onMouseLeave={() => setHoveredCell(null)}
-                          className={`h-4.5 w-4.5 cursor-pointer rounded-xs transition-transform hover:scale-125 ${
+                          title={`${cell.name}: ${cell.score != null ? `${cell.score}%` : 'Not attempted'} (${cell.status})`}
+                          aria-label={`${cell.name}: ${cell.score != null ? `${cell.score}%` : 'Not attempted'} (${cell.status})`}
+                          className={`relative h-4.5 w-4.5 rounded-xs transition-all duration-150 transform-gpu cursor-pointer ${
                             colorMap[cell.status]
+                          } ${
+                            isSelected
+                              ? 'scale-125 ring-2 ring-[#C9A227] ring-offset-2 ring-offset-card z-20 shadow-md animate-pulse'
+                              : isHovered
+                              ? 'scale-115 ring-2 ring-brand/60 ring-offset-1 ring-offset-card z-10'
+                              : 'hover:scale-110 active:scale-95'
                           }`}
                         />
                       )

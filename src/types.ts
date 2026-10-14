@@ -36,6 +36,8 @@ export type Person = {
   batch?: string
   section?: string
   program?: string
+  academicYear?: string
+  regulation?: string
 }
 
 export type Topic = {
@@ -70,6 +72,8 @@ export type Course = {
   imageUrl?: string
   status: CourseStatus
   topics: Topic[]
+  isSoftDeleted?: boolean
+  softDeletedStudentIds?: string[]
 }
 
 export type Material = {
