@@ -164,8 +164,8 @@ export function CourseDetails() {
   const { state } = useLms()
   const nav = useNavigate()
 
-  // Primary navigation tabs: Dashboard, Syllabus, Study, Practice, Assessments
-  const [activeTab, setActiveTab] = useState<'Dashboard' | 'Syllabus' | 'Study' | 'Practice' | 'Assessments'>('Dashboard')
+  // Primary navigation tabs: Dashboard, Syllabus, Practice, Assessments
+  const [activeTab, setActiveTab] = useState<'Dashboard' | 'Syllabus' | 'Practice' | 'Assessments'>('Dashboard')
   // Assessments tab view: 'report' for Attempt Report, 'list' for list of course tests/assignments
   const [assessmentView, setAssessmentView] = useState<'report' | 'list'>('report')
 
@@ -250,22 +250,16 @@ export function CourseDetails() {
             </div>
           </div>
 
-          {/* Right: Navigation Tabs (Dashboard, Study, Practice, Assessments)
+          {/* Right: Navigation Tabs (Dashboard, Syllabus, Practice, Assessments)
               NOTE: AI Tutor explicitly ignored here as requested */}
           <div className="flex items-center gap-1 rounded-full bg-white/10 p-1 backdrop-blur-md">
-            {(['Dashboard', 'Syllabus', 'Study', 'Practice', 'Assessments'] as const).map((tab) => {
+            {(['Dashboard', 'Syllabus', 'Practice', 'Assessments'] as const).map((tab) => {
               const active = activeTab === tab
               return (
                 <button
                   key={tab}
                   type="button"
-                  onClick={() => {
-                    if (tab === 'Syllabus') {
-                      setActiveTab('Study')
-                    } else {
-                      setActiveTab(tab)
-                    }
-                  }}
+                  onClick={() => setActiveTab(tab)}
                   className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
                     active
                       ? 'bg-white text-brand shadow-md'
@@ -435,7 +429,7 @@ export function CourseDetails() {
               </div>
               <button
                 type="button"
-                onClick={() => setActiveTab('Study')}
+                onClick={() => setActiveTab('Syllabus')}
                 className="mt-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand hover:bg-brand-dark px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition active:scale-95 sm:mt-0 sm:shrink-0 cursor-pointer"
               >
                 <span>View Syllabus</span>
@@ -641,8 +635,8 @@ export function CourseDetails() {
         </motion.div>
       )}
 
-      {/* UNIFIED COURSE LEARNING WORKSPACE (Merged Syllabus + Study Tabs) */}
-      {(activeTab === 'Syllabus' || activeTab === 'Study') && (
+      {/* UNIFIED COURSE LEARNING WORKSPACE (Merged Syllabus Component) */}
+      {activeTab === 'Syllabus' && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
