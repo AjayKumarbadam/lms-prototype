@@ -6,6 +6,7 @@ import { FacultyDashboard } from './pages/faculty/FacultyDashboard'
 import { CourseList } from './pages/courses/CourseList'
 import { CourseForm } from './pages/courses/CourseForm'
 import { CourseDetails } from './pages/courses/CourseDetails'
+import { RetakeTestPage } from './pages/courses/RetakeTestPage'
 import { CourseStructure } from './pages/courses/CourseStructure'
 import { Participants } from './pages/courses/Participants'
 import { ImportExport } from './pages/courses/ImportExport'
@@ -61,6 +62,7 @@ export default function App() {
             <Route path="courses/new" element={<CourseForm mode="create" />} />
             <Route path="courses/import" element={<ImportExport />} />
             <Route path="courses/:courseId" element={<CourseDetails />} />
+            <Route path="courses/:courseId/assessments/retake" element={<RetakeTestPage />} />
             <Route path="courses/:courseId/edit" element={<CourseForm mode="edit" />} />
             <Route path="courses/:courseId/structure" element={<CourseStructure />} />
             <Route path="courses/:courseId/participants" element={<Participants />} />
@@ -79,6 +81,7 @@ export default function App() {
             <Route path="assignments/:assignmentId/submit" element={<StudentSubmit />} />
             <Route path="assignments/:assignmentId/evaluate" element={<EvaluateWork />} />
             <Route path="assessments" element={<AssessmentsHome />} />
+            <Route path="assessments/retake" element={<RetakeTestPage />} />
             <Route path="assessments/quiz/new" element={<QuizBuilder />} />
             <Route path="assessments/quiz/:quizId/take" element={<TakeQuiz />} />
             <Route path="assessments/workflow" element={<WorkflowPage />} />

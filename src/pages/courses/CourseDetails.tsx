@@ -1081,7 +1081,7 @@ export function CourseDetails() {
                   {/* Right Actions: Retake Button
                       NOTE: AI Tutor button intentionally omitted here as per global sticky button policy */}
                   <div className="flex items-center gap-2 self-start">
-                    <Button onClick={() => setCustomPracticeModal(true)}>Retake</Button>
+                    <Button onClick={() => nav(`/lms/courses/${course.id}/assessments/retake`)}>Retake</Button>
                   </div>
                 </div>
 
