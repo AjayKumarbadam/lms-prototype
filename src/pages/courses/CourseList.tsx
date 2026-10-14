@@ -74,7 +74,7 @@ export function CourseList() {
         }
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Total courses"
           value={activeCourses.length}
@@ -87,18 +87,6 @@ export function CourseList() {
           value={activeCourses.filter((c) => c.status === 'published').length}
           onClick={() => setStatus('published')}
           className={status === 'published' ? 'ring-2 ring-brand border-brand/50 bg-brand-soft/20' : ''}
-        />
-        <StatCard
-          label="Draft"
-          value={activeCourses.filter((c) => c.status === 'draft').length}
-          onClick={() => setStatus('draft')}
-          className={status === 'draft' ? 'ring-2 ring-brand border-brand/50 bg-brand-soft/20' : ''}
-        />
-        <StatCard
-          label="Archived"
-          value={activeCourses.filter((c) => c.status === 'archived').length}
-          onClick={() => setStatus('archived')}
-          className={status === 'archived' ? 'ring-2 ring-brand border-brand/50 bg-brand-soft/20' : ''}
         />
         <StatCard label="Enrolled students" value={enrolled} />
         <StatCard
@@ -123,8 +111,6 @@ export function CourseList() {
             {[
               { id: 'all', label: 'All Courses', count: activeCourses.length },
               { id: 'published', label: 'Published', count: activeCourses.filter((c) => c.status === 'published').length },
-              { id: 'draft', label: 'Draft', count: activeCourses.filter((c) => c.status === 'draft').length },
-              { id: 'archived', label: 'Archived', count: activeCourses.filter((c) => c.status === 'archived').length },
               { id: 'soft-deleted', label: 'Soft Deleted', count: softDeletedCount, isTrash: true },
             ].map((tab) => {
               const isActive = status === tab.id
@@ -203,8 +189,6 @@ export function CourseList() {
           <Select value={status} onChange={(e) => setStatus(e.target.value)}>
             <option value="all">All statuses</option>
             <option value="published">Published</option>
-            <option value="draft">Draft</option>
-            <option value="archived">Archived</option>
             <option value="soft-deleted">Soft Deleted ({softDeletedCount})</option>
           </Select>
           <Select value={dept} onChange={(e) => setDept(e.target.value)}>
